@@ -1,0 +1,477 @@
+
+\chapter{多个线性系统的分布式模型预测调节控制}
+
+\section{引言}
+
+调节是指设计合适的控制器，使系统状态收敛到平衡点。这是控制领域研究的基本问题。本章主要研究多个异构线性系统的分布式模型预测调节控制问题，其中智能体系统之间通过成本函数和约束相互耦合，且耦合约束是范数形式的。
+
+对于存在成本耦合的多智能体系统，文献\citep{DunbarWBAuto(2006),WangPTAC(2014)}均采用同步更新策略，设计了对应的相容性约束，从而使得优化问题能分布式求解。耦合约束具有广泛的现实意义，例如多车系统需要满足避碰\cite{WangPTAC(2014)}，投资组合中需要保证无风险资产不为负\cite{MolinaPAD(2012)}等。对于存在耦合约束的系统，文献\citep{RichardsA(2007)}提出了一种顺序更新策略，每个智能体顺序求解各自的优化问题从而使耦合约束能得到满足。但是这种方式极大地增加了在线计算量和通信量负担。为此，文献
+\citep{TroddenPAuto(2013)}提出了一种新的“冻结”更新策略，即每一采用时刻只有一个智能体系统更新，其他系统采用其可行解，从而保证了耦合约束满足，虽然降低了计算量和通信量，但是和同步更新方式相比，其解是次优解，因此牺牲了整个系统的性能。
+
+另外，范数形式的约束是一种重要的约束。例如，在多车系统中，用$x_i$和$x_j$分别表示车的位置，$\|x_i-x_j\|\geq 2r$表示车之间需要满足避碰，而$\|x_i-x_j\|\leq2R$表示车之间需要满足通信距离的限制
+\cite{MorganDJGCD(2014),ChaloulosG(2010)}。另外在投资组合问题\cite{GotohJ(2011),DeMiguelV(2009)}中，投资组合权重向量的范数约束可以理解为在最小化投资组合方差的基础上，收缩无约束的卖空样本的规模，范数约束的引入降低了估计器的偏差。
+
+以上是本章工作的主要动机。本章的主要贡献为：
+\begin{itemize}
+\item[(1)]在分布式结构下，设计了解耦的终端成分，而且终端集内的状态满足耦合约束；
+\item[(2)]采用同步更新方式，在文献\citep{DunbarWBAuto(2006),WangPTAC(2014)}的基础上，设计了改进的相容性约束上界，保证假设轨迹和实际轨迹的一致性；
+\item[(3)]分析了局部约束和耦合约束的迭代可行性，以及整个系统的闭环稳定性，给出了严格的证明。
+\end{itemize}
+
+\begin{notation}
+$\mathbb{X}_i$和$\mathbb{U}_i$分别表示状态允许集和输入允许集；$0<T<\infty$表示预测时域；$0< \delta = t_{k+1}-t_k \leq T$表示采样周期；$x(\tau|t_k)$在$t_k$时刻预测$\tau$时刻$x$的值；$\|x\|$表示$x$的$2$- 范数，即$\|x\|=\sqrt{x^Tx}$；$\|x\|^2_P=x^TPx$；$\lambda_{min}(P)$和$\lambda_{max}(P)$分别表示方阵$P$的最小特征值和最大特征值。
+\end{notation}
+
+\section{问题的描述}
+考虑$N_a$个动态解耦的线性时不变系统：
+\begin{eqnarray}
+\label{chap1_model}
+\dot{x}_{i}=A_ix_i+B_iu_i, \ \forall i\in\mathbb{N}_a=\{1,2,\ldots,N_a\},
+\end{eqnarray}
+其中$x_{i}\in \mathbb{R}^n$和$u_{i}\in \mathbb{R}^m$分别是智能体$i$的状态和控制输入。
+
+\begin{assumption}
+\label{chap1_stabilizable assumption}
+对所有智能体$i\in\mathbb{N}_a$，$(A_i, B_i)$是可镇定的。
+\end{assumption}
+
+假设\ref{chap1_stabilizable assumption}表示，存在线性反馈率$u_i=K_ix_i$，$K_i\in \mathbb{R}^{m\times n}$使得$A_i+B_iK_i$的特征值全部严格位于复平面的左半开平面。
+
+本章的控制目标是将所有智能体的状态镇定到原点。在本章中，所有能和智能体$i$通信的其他智能体均认为是智能体$i$的邻居。智能体和它的邻居之间通过成本函数和约束相互耦合。定义$\mathcal{N}_i$和$|\mathcal{N}_i|$分别为智能体$i$的邻居集合和邻居的数量。为了方便，令$x_{-i}=[x_{j_1}^T,\ldots,x_{j_{|\mathcal{N}_i|}}^T]^T$ 表示智能体$i$所有邻居状态组成的向量，其中$j_k\in \mathcal{N}_i$，$k=1,2,\ldots,|\mathcal{N}_i|$。进一步，定义集合$\mathcal{N}^+_i=\{\mathcal{N}_i,i\}$。
+
+智能体$i$对应的约束包括：
+\begin{itemize}
+\item 局部约束
+\begin{eqnarray*}
+x_i\in \mathbb{X}_i  \ \ \text{和} \ \  u_i\in \mathbb{U}_i;
+\end{eqnarray*}
+\item $C_i$个耦合约束
+\begin{eqnarray*}
+G_{ij}(x_i,x_{-i})\leq g_{ij}, j\in\mathcal{C}_i=\{1,2,\ldots,C_i\}.
+\end{eqnarray*}
+\end{itemize}
+明显地，智能体$i$的任何一个邻居$k\in\mathcal{N}_i$也要满足涉及智能体$k$的耦合约束$G_{ij}$。这里暗含假设：每个耦合约束涉及的智能体之间均可相互通信。特别地，本章考虑的耦合约束具有特定的范数形式：
+\begin{eqnarray}
+\label{chap1_coupled constraints}
+G_{ij}(x_i,x_{-i})=\|\sum_{k\in\mathcal{N}^+_i}\alpha^i_{jk}x_k\|^2,
+\end{eqnarray}
+其中$\alpha^i_{jk}$为给定的标量，$i\in\mathbb{N}_a$，$j\in\mathcal{C}_i$，$k\in\mathcal{N}^+_i$。容易看出，$g_{ij}$应满足$g_{ij}>0$。
+
+根据$Weierstrass$定理，如果优化问题的成本对决策变量是连续的，并且约束构成的集合是紧集，那么该优化问题一定存在解。为此，给出以下假设。
+\begin{assumption}
+\label{chap1_sets assumption}
+对于$i=1,2,\ldots,N_a$，集合$\mathbb{X}_i$为闭集，集合$\mathbb{U}_i$为紧集，它们均包括原点。
+\end{assumption}
+
+下面给出智能体$i$的理想成本函数：
+\begin{eqnarray}
+\label{chap1_cost}
+J_i(t_k,x_i,x_{-i},u_i)=\int_{t_k}^{t_k+T}L_i(\tau|t_k,x_i,x_{-i},u_i)d\tau+L_{if}(x_i(t_k+T|t_k)),
+\end{eqnarray}
+其中阶段成本为
+\begin{eqnarray}
+\label{chap1_stage cost}
+L_i(\tau|t_k,x_i,x_{-i},u_i)=\sum_{j\in\mathcal{N}_i}\|x_i(\tau|t_k)-x_j(\tau|t_k)\|^2_{Q^1_{ij}}+\|x_i(\tau|t_k)\|^2_{Q^2_i}+ \|u_i(\tau|t_k)\|^2_{R_i},
+\end{eqnarray}
+终端成本为$L_{if}(x_i(t_k+T|t_k))$。$L_{if}(x_i(t_k+T|t_k))$是连续可微的函数，其具体形式将在后面小节中设计。在阶段成本中$Q^1_{ij}$和$Q^2_{i}$为给定的正定矩阵，$R_i$是给定的半正定矩阵。
+\section{分布式协同模型预测控制}
+在存在耦合的情况下，其他智能体完成优化之前，更新智能体不可能收到其邻居的全部预测状态。为了使更新智能体的优化问题可解，本文采纳同步更新策略。在同步更新策略中，所有智能体同时求解各自的优化问题，邻居间传递的是假设状态，不是实际状态。为了简化，表\ref{chap1_Table 1}列出了一些定义在区间$[t_k,t_k+T]$的变量。
+\begin{table}[!t]
+\renewcommand\arraystretch{1.2}
+\centering
+\caption{\label{chap1_Table 1}智能体$i$的变量}
+\begin{tabular}{c|l}
+\hline
+$u_i^{*}(\tau|t_k)$ & 最优控制输入 \\
+\hline
+$x_i^{*}(\tau|t_k)$ & 最优状态 \\
+\hline
+$\tilde{u}_i(\tau|t_k)$  & 可行控制输入 \\
+\hline
+$\tilde{x}_i(\tau|t_k)$  & 可行状态  \\
+\hline
+$\hat{u}_i(\tau|t_k)$  & 假设控制输入  \\
+\hline
+$\hat{x}_i(\tau|t_k)$  & 假设状态  \\
+\hline
+\end{tabular}
+\end{table}
+
+不同于文献\citep{DunbarWBAuto(2006),WangPTAC(2014)}中的定义，本章中假设控制输入的定义如下：
+\begin{eqnarray}
+\label{chap1_assumped input}
+  \hat{u}_i(\tau|t_k)=\left\{
+               \begin{array}{l}
+                \tilde{u}_i(\tau|t_{k-1})   \qquad \ \ \   \tau\in[t_k,t_{k-1}+T), \\
+               \kappa_i(x_i^{\kappa}(\tau|t_{k-1}))     \  \quad\tau\in[t_{k-1}+T,t_k+T],\\
+               \end{array}
+             \right.
+\end{eqnarray}
+其中$\kappa_i(x_i^{\kappa}(\tau|t_{k-1}))$为终端控制器，$x_i^{\kappa}(\tau|t_{k-1})$是起始于$\tilde{x}_i(t_{k-1}+T|t_{k-1})$、控制输入为$\kappa_i$时的状态。将假设控制输入作用于系统
+（\ref{chap1_model}），可得假设状态如下：
+\begin{eqnarray}
+\label{chap1_assumped state}
+  \hat{x}_i(\tau|t_k)=\left\{
+               \begin{array}{l}
+                \tilde{x}_i(\tau|t_{k-1})    \qquad \ \ \   \tau\in[t_k,t_{k-1}+T), \\
+                x_i^{\kappa}(\tau|t_{k-1}) \ \ \qquad \tau\in[t_{k-1}+T,t_k+T].\\
+               \end{array}
+             \right.
+\end{eqnarray}
+
+\begin{remark}
+因为最优输入是特殊的可行解，因此相比于\citep{DunbarWBAuto(2006),WangPTAC(2014)}，本章定义的假设控制输入更加具有普遍性。当用最优控制输入代替可行控制输入时，本章的定义即与
+\citep{DunbarWBAuto(2006),WangPTAC(2014)}等价。
+\end{remark}
+
+本章假设当最优控制输入可得到时，（\ref{chap1_assumped input}）—（\ref{chap1_assumped state}）采纳$u^*_i(\cdot)$和$x^*_i(\cdot)$代替$\tilde{u}(\cdot)$和$\tilde{x}(\cdot)$。为了与$x_{-i}$的定义一致，定义$\hat{x}_{-i}$为智能体$i$的邻居的假设状态组成的向量。采用$\hat{x}_{-i}$代替$x_{-i}$，智能体$i$的优化问题为：
+
+{\bf 问题1} \quad 在任意更新时刻$t_k$，对于智能体$i=1,2,\ldots,N_a$，给定$x_i(t_k)$和$\hat{x}_{-i}(\tau|t_k)$，$\tau\in[t_k,t_k+T]$，
+\begin{eqnarray*}
+J_i^*(t_k,x_i^*,\hat{x}_{-i},u_i^*)=\min_{u_i(\tau|t_k)}J_i(t_k,x_i,\hat{x}_{-i},u_i)
+\end{eqnarray*}
+使得对于所有的$\tau\in[t_k,t_k+T]$
+\begin{eqnarray}
+&&x_i(t_k|t_k)=x_i(t_k),\\
+&&\dot{x}_{i}(\tau|t_k)= A_ix_i(\tau|t_k)+B_iu_i(\tau|t_k), \label{chap1_dynamics constraint}\\
+&&x_i(\tau|t_k)\in\mathbb{X}_i, \label{chap1_local state constraint}\\
+&&u_i(\tau|t_k)\in\mathbb{U}_i, \label{chap1_local input constraint}
+\end{eqnarray}
+\begin{eqnarray}
+&&G_{ij}(x_i(\tau|t_k),\hat{x}_{-i}(\tau|t_k))\leq g_{ij},  \ \ j\in \mathcal{C}_i \label{chap1_coupling constraints}\\
+&&\|x_i(\tau|t_k)-\hat{x}_i(\tau|t_k)\|^2\leq \xi_i^2(t_k),  \label{chap1_compatibility constraints}\\
+&&x_i(t_k+T|t_k)\in \mathbb{X}_{if}, \label{chap1_terminal constraints}
+\end{eqnarray}
+其中$\|x_i(\tau|t_k)-\hat{x}_i(\tau|t_k)\|^2\leq \xi_i^2(t_k)$表示相容性约束，其反应了智能体$i$实际轨迹和假设轨迹之间的一致性\cite{DunbarWBPHD(2004)}。
+
+\subsection{相容性约束的设计}
+在同步更新策略中，相容性约束在保证整个系统的稳定性中起着至关重要的作用。下面，我们将设计相容性约束（\ref{chap1_compatibility constraints}），给出明确的$\xi_i(t_k)$。首先先定义两个相关变量。第一个为
+\begin{eqnarray}
+\label{chap1_maximum bound}
+\eta_i(t_k)=\max\limits_{j\in\mathcal{N}_i}\max\limits_{\tau\in[t_k,t_k+T]}\|\hat{x}_i(\tau|t_k)-\hat{x}_j(\tau|t_k)\|,
+\end{eqnarray}
+其表示在时间区间$[t_k,t_{k+T}]$内智能体$i$的假设轨迹与它的邻居的假设轨迹之间的最大偏差。第二个定义为：
+\begin{eqnarray}
+\label{chap1_minimum bound}
+\iota_i(t_k)=\min\limits_{j\in\mathcal{N}_i}\min\limits_{\tau\in[t_k,t_{k+1}]}\|\hat{x}_i(\tau|t_k)-\hat{x}_j(\tau|t_k)\|,
+\end{eqnarray}
+其表示在时间区间$[t_k,t_{k+1}]$内智能体$i$的假设轨迹和它的邻居的假设轨迹之间的最小偏差。
+
+同时，定义$\Delta_{i}(t_k)=\frac{T-\delta}{\delta\sum_{j\in\mathcal{N}_i}\lambda_{min}(Q^1_{ij})}\sum_{j\in\mathcal{N}_i}\lambda_{max}(Q^1_{ji})(4\eta_j(t_k)+\eta_i(t_k))$。
+$\xi_i(t_k)$的上界与$\iota_i(t_k)$和$\Delta_{i}(t_k)$有关，其具体形式为：
+\begin{eqnarray}
+\label{chap1_second bound}
+\nu_i(t_k)=\frac{2\iota_i(t_k)+\Delta_{i}(t_k)-\sqrt{(2\iota_i(t_k)+\Delta_{i}(t_k))^2-4\iota^2_i(t_k)}}{2},
+\end{eqnarray}
+$\nu_i(t_k)$的作用为保证系统的稳定性，在后面章节中给出了详细说明。
+
+由此，$\xi_i(t_k)$可设计为：
+\begin{eqnarray}
+\label{chap1_bound of compatibility constraints}
+\xi_i(t_k)\leq\min\{\eta_i(t_k),\nu_i(t_k)\}=\nu_i(t_k).
+\end{eqnarray}
+
+\begin{remark}
+当$\iota_i(t_k)$为零，即智能体$i$的假设轨迹和它邻居的假设轨迹之间有交叉时，$\xi_i(t_k)$为$0$。此时优化问题的最优解为假设控制输入。
+\end{remark}
+
+\begin{remark}
+文献\citep{DunbarWBAuto(2006),DunbarWBPHD(2004)}中的相容性约束取决于收缩的采样周期$\delta$。 当所有子系统的状态趋向于原点时，$\delta$趋向于$0$，这意味着通信负担增加和相容性约束更紧。在本章和
+\citep{WangIJC(2014),WangPTAC(2014)}中，$\delta$可以为不超过$T$的任意常值，相容性约束在保证系统的稳定性中起着重要作用。
+\end{remark}
+
+\subsection{终端成分的设计}
+许多研究MPC的文献指出终端成分（终端集、终端成本和终端控制器）在保证迭代可行性和闭环稳定性中起着至关重要的作用，并且三个终端成分往往要联合设计。在给出本章的设计方案之前，我们首先给出一个关于终端成分的假设。
+
+\begin{assumption}
+终端集$\mathbb{X}_{if}$是集合$\mathbb{X}_i$的子集。当$x_i\in \mathbb{X}_{if}$时，$K_ix_i\in\mathbb{U}_i$。
+\end{assumption}
+
+对智能体$i$，终端集定义为：
+\begin{eqnarray}
+\label{chap1_terminal set}
+\mathbb{X}_{if}=\{x\mid\|x\|^2_{P_i}\leq\gamma_i\},
+\end{eqnarray}
+终端成本定义为：
+\begin{eqnarray}
+\label{chap1_terminal cost}
+L_{if}(x)=\|x\|^2_{P_i},
+\end{eqnarray}
+终端控制器为：
+\begin{eqnarray}
+\label{chap1_terminal controller}
+\kappa_i(x)=K_ix,
+\end{eqnarray}
+其中$\gamma_i$为标量，$P_i$为正定矩阵。下面的定理给出了如何设计$P_i$和$\gamma_i$。
+\begin{theorem}
+\label{chap1_theorem 1}
+对于所有的$i=1,2,\ldots,N_a$，给定$K_i$、$Q^1_{ij}$、$Q^1_{ji}$、$Q^2_i$和$R_i$，其中 $j\in\mathcal{N}_i$，定义$\psi_i=A_i+B_iK_i$和 $\Lambda_i=2\sum_{j\in\mathcal{N}_i}(Q^1_{ij}+Q^1_{ji})+Q^2_i+K^T_iR_iK_i$。如果$P_i$是一个满足下面的李亚普诺夫方程的正定矩阵:
+\begin{eqnarray}
+\label{chap1_Lyapunov equation}
+P_i\psi_i+\psi^T_iP_i+\Lambda_i=0,
+\end{eqnarray}
+那么$L_{if}$是一个局部李亚普诺夫函数（Local Lyapunov function）\cite{MayneDQ(2000)}使得对于$x_i(t)\in \mathbb{X}_{if}$，
+\begin{eqnarray}
+\label{chap1_control-Lyapunov}
+\sum_{i=1}^N(\dot{L}_{if}(x_i)+L_i(t,x_i,x_{-i},u_i))\leq0.
+\end{eqnarray}
+进一步地，对于智能体$i$，如果
+\begin{eqnarray}
+\label{chap1_gama}
+\gamma_i=\min_{k\in\mathcal{N}^+_i}\min_{j\in\mathcal{C}_k}\frac{g_{kj}\lambda_{min}(P_i)}{2(|\mathcal{N}_k|+1)|\alpha^k_{ji}|^2},
+\end{eqnarray}
+那么可以得到$\mathbb{X}_{if}$是一个对应于终端控制器$u_i=K_ix_i$的正定不变集，同时终端集$\mathbb{X}_{if}$中的所有状态都一定满足耦合约束（\ref{chap1_coupling constraints}）。
+\end{theorem}
+\begin{proof}
+首先，我们将证明$L_{if}$是一个对应于阶段成本（\ref{chap1_stage cost}）的局部李亚普诺夫函数。由不等式$\|x_1-x_2\|_Q^2\leq2(\|x_1\|_Q^2+\|x_2\|_Q^2)$和终端控制器$u_i=K_ix_i$，可得
+\begin{eqnarray*}
+&&\hspace{0.5cm}\sum_{i=1}^{N_a}(\dot{L}_{if}(x_i)+L_i(t,x_i,x_{-i},u_i)) \\
+&&=\sum_{i=1}^{N_a}\{x^T_iP_i\dot{x}_i+\dot{x}^T_iP_ix_i+\sum_{j\in\mathcal{N}_i}\|x_i(\tau|t_k)-x_j(\tau|t_k)\|^2_{Q^1_{ij}}+\|x_i(\tau|t_k)\|^2_{Q^2_i}+ \|u_i(\tau|t_k)\|^2_{R_i}\} \\
+&&\leq\sum_{i=1}^{N_a}\{x^T_iP_i\psi_ix_i+x^T_i\psi^T_iP_ix_i+2x^T_i\sum_{j\in\mathcal{N}_i}(Q^1_{ij}+Q^1_{ji})x_i+x^T_i(Q^2_i+K^T_iR_iK_i)x_i\}\\
+&&\leq\sum_{i=1}^{N_a} x^T_i(P_i\psi_i+\psi^T_iP_i+\Lambda_i)x_i.
+\end{eqnarray*}
+因为$R_i$是半正定矩阵，$Q^1_{ij}$和$Q^2_{i}$是正定矩阵，所以$\Lambda_i$也是正定的。由此可得，如果$P_i$是通过求解李亚普诺夫方程（\ref{chap1_Lyapunov equation}）得到的，那么我们保证
+（\ref{chap1_control-Lyapunov}）成立。
+
+进一步地，由于$K_i$是镇定的反馈增益，而$P_i$是满足李亚普诺夫方程（\ref{chap1_Lyapunov equation}）的正定矩阵，我们很容易得到$\mathbb{X}_{if}=\{x\mid\|x\|^2_{P_i}\leq\gamma_i\}$是一个对应于终端控制器$u_i=K_ix_i$的正定不变集，即当$x_i(t_1)\in\mathbb{X}_{if}$，对于所有的$t_2>t_1$，$x_i(t_2)\in\mathbb{X}_{if}$。根据不等式$\|x_1+x_2\|^2\leq2(\|x_1\|^2+\|x_2\|^2)$，由（\ref{chap1_gama}）可得，对于所有的$k\in\mathcal{N}^+_i$, $x_k\in\mathbb{X}_{kf}$和$j\in\mathcal{C}_i$，
+\begin{eqnarray*}
+&&\ \ \ \ \ \frac{2|\alpha^i_{jk}|^2\|x_k\|^2_{P_k}}{\lambda_{min}(P_k)}\leq\frac{g_{ij}}{|\mathcal{N}_i|+1}\\
+&&\Longrightarrow 2\|\alpha^i_{jk}x_k\|^2\leq\frac{g_{ij}}{|\mathcal{N}_i|+1}\\
+&&\Longrightarrow 2\sum_{k\in\mathcal{N}^+_i}\|\alpha^i_{jk}x_k\|^2\leq g_{ij} \\
+&&\Longrightarrow \|\sum_{k\in\mathcal{N}^+_i}\alpha^i_{jk}x_k\|^2\leq g_{ij} \\
+&&\Longrightarrow G_{ij}(x_i,x_{-i})\leq g_{ij}.
+\end{eqnarray*}
+因此，集合$\mathbb{X}_{if}$中的所有状态一定满足耦合约束（\ref{chap1_coupling constraints}）。
+\end{proof}
+
+\begin{remark}
+终端成本和终端集分别由参数$\gamma_i$和$P_i$决定，而这些参数是可以离线计算得到的。其中，$P_i$可通过求解李亚普诺夫方程（\ref{chap1_Lyapunov equation}）得到。不同于单个系统的李亚普诺夫方程
+\cite{MayneDQBOOK(2009)}，本章的李亚普诺夫方程涉及耦合成本中的权重参数。
+\end{remark}
+
+
+\subsection{分布式实现算法}
+在本小节中，我们将首先分析系统间的通信要求。为了求解各自的优化问题，每个智能体不仅需要得到邻居的假设轨迹，而且需要得到邻居的参数，即（\ref{chap1_maximum bound}）中的$\eta_j$。除此之外，对于智能体$i$，集合$\mathcal{N}^+_i$中的所有智能体之间需要共享耦合信息，包括$g_{ij}$和$\alpha^k_{ij}$，其目的是为了离线求解自己的终端集$\mathbb{X}_{if}$。下面，我们将给出同步分布式实现策略。
+
+\textbf{算法1}
+
+\textbf{离线阶段}：对于每个智能体$i$，给定其参数$\mathcal{N}_i$、$\mathcal{C}_i$、$Q^1_{ij}$、$Q^2_{i}$、 $R_i$和其他耦合约束中的参数，离线确定矩阵$P_i$和终端集$\mathbb{X}_{if}$。
+
+\textbf{在线阶段}：在初始时刻$t_0$，给出初始最优控制输入$u_i^*(\tau|t_0)$和初始最优状态轨迹$x_i^*(\tau|t_0)$，$\tau\in[t_0,t_0+T]$。
+
+(i) 在时间区间$[t_k,t_{k+1})$，$k\geq 0$，每个智能体$i$
+\begin{itemize}
+\item 实施实际轨迹$x_i(t)=x_i^*(t|t_k)$，$t\in[t_k,t_{k+1})$；
+
+\item 计算假设的控制输入$\hat{u}_i(\tau|t_{k+1})$和假设的状态轨迹$\hat{x}_i(\tau|t_{k+1})$，$\tau\in[t_{k+1},t_{k+1}+T]$；
+
+\item 将$\hat{x}_i(\cdot)$传递给它的邻居，接收来自邻居$j\in\mathcal{N}_i$的$\hat{x}_j(\cdot)$；
+
+\item 分别根据（\ref{chap1_maximum bound}）和（\ref{chap1_minimum bound}）计算参数$\eta_{i}(t_{k+1})$和$\iota_i(t_k)$;
+
+\item 将$\eta_{i}(t_{k+1})$传递它的邻居，接收来自邻居$j\in\mathcal{N}_i$的$\eta_{j}(t_{k+1})$；
+\end{itemize}
+
+(ii) 在每个采样时刻$t_{k+1}$，$k\geq0$，每个智能体$i$
+\begin{itemize}
+\item 采样当前状态$x_i(t_{k+1})$，根据（\ref{chap1_second bound}）—（\ref{chap1_bound of compatibility constraints}）计算参数$\nu_i(t_{k+1})$和$\xi_i(t_{k+1})$；
+
+\item 求解\textbf{问题1}，得到最优控制输入$u_i^*(\tau|t_{k+1})$和最优状态轨迹$x_i^*(\tau|t_{k+1})$，$\tau\in[t_{k+1},t_{k+1}+T]$。
+\end{itemize}
+
+(iii) 返回(i).
+
+\section{主要结果}
+本节主要分析整个系统的迭代可行性和闭环稳定性。
+\begin{theorem}
+在每个采样时刻$t_k$，所有模型如（\ref{chap1_model}）的智能体同步求解各自的优化问题。如果在初始时刻$t_0$，每个智能体都存在一个可行解，那么对于所有的$t_k$，$k\geq1$，其优化问题均可行。进一步地，整个系统是渐进稳定的，即当$t\rightarrow \infty$，对于所有的$i=1,2,\ldots,N_a$，$x_i\rightarrow 0$。
+\end{theorem}
+\begin{proof}
+首先，我们证明智能体$i$的迭代可行性。令$\tilde{u}_i(\tau|t_k)$为可行的控制输入，$\tilde{x}_i(\tau|t_k)$为可行的状态轨迹，其中$\tau\in[t_k,t_k+T]$，$k\geq0$。如果在$t_k$时刻，智能体$i$的优化问题是可行的，我们从（\ref{chap1_assumped input}）的定义可以得到时间间隔$\tau\in[t_{k+1},t_{k+1}+T]$上的假设控制输入。令$\check{u}_{i}(\tau|t_{k+1})=\hat{u}_{i}(\tau|t_{k+1})$作为$t_{k+1}$的控制输入。相应地，令$\check{x}_{i}(\tau|t_{k+1})=\hat{x}_{i}(\tau|t_{k+1})$。我们很容易得到，从时刻$t_{k+1}$到$t_{k+1}+T$，$\check{u}_{i}(\cdot)$和$\check{x}_{i}(\cdot)$满足约束（\ref{chap1_dynamics constraint}）—（\ref{chap1_local input constraint}）和（\ref{chap1_compatibility constraints}）。进一步地，由 \ref{chap1_theorem 1}可得终端集中的状态一定满足耦合约束（\ref{chap1_coupling constraints}）。所以，$\check{u}_{i}(\cdot)$和$\check{x}_{i}(\cdot)$可以保证耦合约束在区间$[t_{k+1},t_{k+1}+T]$满足。总之，$\check{u}_{i}(\cdot)$在时刻$t_{k+1}$对智能体$i$是可行的，即初始可行一定可得迭代可行。
+
+下面，我们证明整个系统的收敛性。李亚普诺夫函数定义为所有智能体最优成本的和，即
+\begin{eqnarray}
+\label{chap1_Eq.25}
+J_{\sum}^*(t_k)=\sum_{i=1}^{N_a}J_i^*(t_k,x_i^*,\hat{x}_{-i},u_i^*).
+\end{eqnarray}
+
+定义$\tilde{u}_i(\tau|t_{k+1})=\hat{u}_i(\tau|t_{k+1})$，$\tau\in[t_{k+1},t_{k+1}+T]$为时刻$t_{k+1}$ 的可行解。因此，由（\ref{chap1_control-Lyapunov}）可得
+\begin{eqnarray}
+\label{chap1_Eq.26}
+&&\hspace{0.5cm}J_{\sum}^*(t_{k+1})-J_{\sum}^*(t_k) \nonumber \\
+&&\leq\sum_{i=1}^{N_a}(J_i(t_{k+1},\tilde{x}_i,\hat{x}_{-i},\tilde{u}_i)-J_i^*(t_k,x_i^*,\hat{x}_{-i},u_i^*))\nonumber \\
+&&=\sum_{i=1}^{N_a}\{\sum_{j\in\mathcal{N}_i}\int_{t_{k+1}}^{t_{k}+T}(\|x_i^*(\tau|t_k)-x_j^*(\tau|t_k)\|^2_{Q^1_{ij}}-\|x_i^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|^2_{Q^1_{ij}})d\tau\nonumber \\
+&&\quad-\int_{t_k}^{t_{k+1}}L_i(\tau|t_k,x_i^*,\hat{x}_{-i},u_i^*)d\tau+\int_{t_k+T}^{t_{k+1}+T}L_i(\tau|t_k,x_i^{\kappa},x_{-i}^{\kappa},\kappa_i)d\tau \nonumber \\
+&&\quad+L_{if}(x_i^{\kappa}(t_{k+1}+T|t_k))-L_{if}(x_i^*(t_k+T|t_k))\} \nonumber
+\end{eqnarray}
+\begin{eqnarray}
+&&\leq\sum_{i=1}^{N_a}\{\sum_{j\in\mathcal{N}_i}\int_{t_{k+1}}^{t_{k}+T}(\|x_i^*(\tau|t_k)-x_j^*(\tau|t_k)\|^2_{Q^1_{ij}}-\|x_i^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|^2_{Q^1_{ij}})d\tau\nonumber \\
+&&\quad-\int_{t_k}^{t_{k+1}}L_i(\tau|t_k,x_i^*,\hat{x}_{-i},u_i^*)d\tau\}.
+\end{eqnarray}
+
+根据不等式$\|a+b\|\leq\|a\|+\|b\|$和$a^TPb\leq\lambda_{max}(P)\|a\|\|b\|$，其中$a,b\in\mathbb{R}^{n}$，$P\in\mathbb{R}^{n\times n}$是正定的，可得
+\begin{eqnarray}
+\label{chap1_Eq.28}
+&&\hspace{0.5cm}\sum_{i=1}^{N_a}\{\sum_{j\in\mathcal{N}_i}\int_{t_{k+1}}^{t_{k}+T}(\|x_i^*(\tau|t_k)-x_j^*(\tau|t_k)\|^2_{Q^1_{ij}}-\|x_i^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|^2_{Q^1_{ij}})d\tau\} \nonumber \\
+&&\leq\sum_{i=1}^{N_a}\{\sum_{j\in\mathcal{N}_i}\int_{t_{k+1}}^{t_{k}+T}\lambda_{max}(Q^1_{ij})(2\|x_i^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|\|x_j^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|
+\nonumber \\
+&&\quad+\|x_j^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|^2)d\tau)\} \nonumber \\
+&&\leq\sum_{i=1}^{N_a}\{\sum_{j\in\mathcal{N}_i}\int_{t_{k+1}}^{t_{k}+T}\lambda_{max}(Q^1_{ij})(2(\|x_i^*(\tau|t_k)-\hat{x}_i(\tau|t_k)\|+\|\hat{x}_i(\tau|t_k)-\hat{x}_j(\tau|t_k)\|) \nonumber \\
+&&\quad\times\|x_j^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|\nonumber+\|x_j^*(\tau|t_k)-\hat{x}_j(\tau|t_k)\|^2)d\tau\}\nonumber\\
+&&\leq\sum_{i=1}^{N_a}\{\sum_{j\in\mathcal{N}_i}\int_{t_{k+1}}^{t_{k}+T}\lambda_{max}(Q^1_{ij})(4\eta_i(t_k)\times\xi_j(t_k)+\eta_j(t_k)\times\xi_j(t_k))d\tau\}\nonumber \\
+&&\leq\sum_{i=1}^{N_a}\{\xi_i(t_k)(T-\delta)\sum_{j\in\mathcal{N}_i}\lambda_{max}(Q^1_{ji})(4\eta_j(t_k)+\eta_i(t_k))\}.\nonumber
+\end{eqnarray}
+
+另外，由$\xi_i(t_k)\leq\iota_i(t_k)$可得
+\begin{eqnarray}
+&&\int_{t_k}^{t_{k+1}}L_i(\tau|t_k,x_i^*,\hat{x}_{-i},u_i^*)d\tau \nonumber \\
+&&=\int_{t_k}^{t_{k+1}}\sum_{j\in\mathcal{N}_i}\|x^*_i(\tau|t_k)-\hat{x}_j(\tau|t_k)\|^2_{Q^1_{ij}}+\|x^*_i(\tau|t_k)\|^2_{Q^2_i}+ \|u^*_i(\tau|t_k)\|^2_{R_i}d\tau \nonumber \\
+&&\geq \int_{t_k}^{t_{k+1}}\sum_{j\in\mathcal{N}_i}\lambda_{min}(Q^1_{ij})\|x_i^*(\tau|t_k)-\hat{x}_i(\tau|t_k)+\hat{x}_i(\tau|t_k)-\hat{x}_j(\tau|t_k)\|^2d\tau \nonumber \\
+&&\geq\int_{t_k}^{t_{k+1}}\sum_{j\in\mathcal{N}_i}\lambda_{min}(Q^1_{ij})(\|\hat{x}_i(\tau|t_k)-\hat{x}_j(\tau|t_k)\|-\|x_i^*(\tau|t_k)-\hat{x}_i(\tau|t_k)\|)^2d\tau  \nonumber \\
+&&\geq\int_{t_k}^{t_{k+1}}\sum_{j\in\mathcal{N}_i}\lambda_{min}(Q^1_{ij})(\iota_i(t_k)-\xi_i(t_k))^2d\tau\nonumber \\
+&&=\delta\sum_{j\in\mathcal{N}_i}\lambda_{min}(Q^1_{ij})(\iota_i(t_k)-\xi_i(t_k))^2.
+\end{eqnarray}
+
+由（\ref{chap1_maximum bound}）—（\ref{chap1_bound of compatibility constraints}），可得对于所有的$x_{i},x_{j}\neq0$，
+\begin{eqnarray}
+\label{chap1_Eq.29}
+J_{\sum}^*(t_{k+1})-J_{\sum}^*(t_k)< 0.
+\end{eqnarray}
+所以，整个系统是渐进稳定的。
+\end{proof}
+
+
+\section{仿真结果和分析}
+本节旨在通过数值仿真证明\textbf{算法1}的有效性，并给出了分布式模型预测控制（DMPC）和集中式模型预测控制（CMPC）的比较。仿真利用ICLOCS\cite{FalugiP(2010)}和IPOPT\cite{WachterA(2010)}等工具箱在Matlab 平台上进行。考虑5个动力学不同的智能体，模型参数如下：
+\begin{eqnarray*}
+&&A_{1} = \left [\begin{array}{ccccc}
+1.6 & 1.1\\
+-0.7 & 1.2
+\end{array}\right],\
+A_{2} = \left [\begin{array}{ccccc}
+1.2 & 1\\
+-0.7 & 1.2
+\end{array}\right], \
+A_{3} = \left [\begin{array}{ccccc}
+2 & 1.1\\
+-0.5 & 1.5
+\end{array}\right],\\
+&&A_{4} = \left [\begin{array}{ccccc}
+1.3 & 1.1\\
+-0.7 & 2
+\end{array}\right],\
+A_{5} = \left [\begin{array}{ccccc}
+1.6 & 1\\
+-0.6 & 1.8
+\end{array}\right],\
+B_{i} = \left [\begin{array}{ccccc}
+1\\
+1
+\end{array}\right] i=1,2,\ldots,5.
+\end{eqnarray*}
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/chap2_state_com}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{所有智能体的状态: (a1-a2)CMPC (b1-b2)DMPC}
+ \label{chap1_state}
+ \vspace{-0.4cm}
+\end{figure}
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/chap2_input_com}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{所有智能体的控制输入: (a)CMPC (b)DMPC}
+ \label{chap1_input}
+ \vspace{-0.4cm}
+\end{figure}
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/chap2_constraint_com}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{耦合约束: (a)CMPC (b)DMPC}
+ \label{chap1_coupled constraints}
+ \vspace{-0.4cm}
+\end{figure}
+
+
+考虑所有智能体全部耦合的情况，即$\mathcal{N}_i=\mathbb{N}_a/\{i\}$。权重矩阵为：$Q^1_{ij}=I$，$Q^2_i=I$和$R_i=1$。耦合约束为：$\|\sum^{N_a}_{i=1}x_i\|^2\leq1$。所有智能体对应的输入约束为：$-1\leq u_i \leq 1$。由定理\ref{chap1_theorem 1}可得终端成分的参数为：
+\begin{eqnarray*}
+&&P_{1} = \left [\begin{array}{ccccc}
+43.21 & -24.54\\
+-24.54 & 18.49
+\end{array}\right],\
+P_{2} = \left [\begin{array}{ccccc}
+46.71 & -30.03\\
+-30.03 & 23.95
+\end{array}\right],\
+P_{3} = \left [\begin{array}{ccccc}
+63.60 & -38.53\\
+-38.53 & 28.52
+\end{array}\right],
+\end{eqnarray*}
+\begin{eqnarray*}
+&&P_{4} = \left [\begin{array}{ccccc}
+160.37 & -125.78\\
+-125.78 & 104.57
+\end{array}\right],\
+P_{5} = \left [\begin{array}{ccccc}
+116.50 & -85.12\\
+-85.12 & 67.85
+\end{array}\right],\\
+&&\lambda_1=0.337, \ \lambda_2=0.322, \ \lambda_3=0.372, \ \lambda_4=0.363,
+\ \lambda_5=0.365.
+\end{eqnarray*}
+
+控制时域$T$设为$3$，采样周期$\delta$设为$0.5$。$5$个智能体的初始状态分别是：
+\begin{eqnarray*}
+&x_1(0)=
+\left[
+  \begin{array}{cccc}
+-2.5& -2  \\
+  \end{array}
+\right]^T,\ \
+x_2(0)=
+\left[
+  \begin{array}{cccc}
+-1.5 &-3 \\
+  \end{array}
+\right]^T, \ \
+x_3(0)=
+\left[
+  \begin{array}{cccc}
+2 & 1.5 \\
+  \end{array}
+\right]^T,&\\
+&x_4(0)=
+\left[
+  \begin{array}{cccc}
+-3 & 3.5 \ \
+  \end{array}
+\right]^T, \ \
+x_5(0)=
+\left[
+  \begin{array}{cccc}
+4 & 3.5 \\
+  \end{array}
+\right]^T.&
+\end{eqnarray*}
+
+
+
+图\ref{chap1_state}-\ref{chap1_input}分别展现了CDMPC和CMPC的状态轨迹和控制输入。我们可以看出，控制输入满足约束$-1\leq u_i\leq1$，并且CDMPC和CMPC的控制性能接近。然而，CDMPC和CMPC之间的控制输入依然存在差异。从图\ref{chap1_coupled constraints}可见，耦合约束对CDMPC是活跃的，而对CMPC是非活跃的。另外，CDMPC的每一步平均优化时间是$4.45s$，而CMPC的每一步平均优化时间是$24.55s$，大概是CDMPC的$5.5$倍。因此，CDMPC不仅大大降低了优化时间，而且保留了CMPC的控制性能。除此之外，从图\ref{chap1_cost}可见，在CDMPC的控制下，整个系统的成本单调递减到0。
+
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.65\textwidth]{figures/chap2_cost_distr}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{CDMPC控制下整个系统的成本}
+ \label{chap1_chap1_cost}
+ \vspace{-0.4cm}
+\end{figure}
+
+
+\section{本章小结}
+本章主要研究了多个异构线性系统的分布式模型预测调节控制问题，智能体系统之间同时存在成本耦合和约束耦合。利用同步更新策略，提出了改进的相容性约束上界；设计了每个智能体的终端成分，给出了其需要满足的条件，并且保证终端集中的状态满足耦合约束；设计了分布式优化算法，详细分析了局部约束和耦合约束的迭代可行性，以及整个系统的闭环稳定性；最后通过仿真实验比较了集中式模型预测控制方法和分布式模型预测控制方法的性能，对比表明在保证系统性能和集中式性能接近的条件下，分布式方法大大缩短了优化时间，减小了在线计算量。

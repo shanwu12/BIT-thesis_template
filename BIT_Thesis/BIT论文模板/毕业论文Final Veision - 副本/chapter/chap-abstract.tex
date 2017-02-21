@@ -1,0 +1,69 @@
+
+\newpage
+\pagenumbering{Roman}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                中文摘要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\centerline{\large \zihao{3}\heiti \hbox{摘要}} \vskip 0.3cm
+在实际应用中，复杂系统具有模型复杂、规模大、变量多、约束多等特点，传统的控制方法无法满足复杂系统控制的要求。近些年来，分布式模型预测控制（Distributed Model Predictive Control，简称DMPC）以其优良的控制性能、有效处理约束的能力和结构的灵活性等优点得到了广泛关注，成为了处理大规模复杂系统的重要工具。目前，该方法该尚处在研究初期，依然存在许多研究难点。例如，如何处理子系统之间的耦合，使得各个子系统的优化问题能在分布式结构下求解；如何设计每个子系统各自的终端成分，减小在线计算量；如何满足优化问题的迭代可行性和整个系统的闭环稳定性。
+
+本文以多智能体系统为研究对象，开展了分布式模型预测控制的系
+列研究，分别研究了多智能体系统的调节问题、一致问题和编队问题，主要研究成果如下：
+
+1、研究了多个异构线性系统的分布式模型预测调节控制问题，智能体系
+统之间同时存在成本耦合和约束耦合。在每一个采样时刻，所有智能体同步更新。提出了改进的相容性约束，保证每个智能体实际轨迹和假设轨迹的一致性。通过求解李亚普诺夫方程得到终端权重矩阵，从而设计了终端成本；利用耦合约束的信息，设计了正定不变的终端集，并且保证终端集中的
+状态满足耦合约束。设计了分布式优化算法，保证局部约束和耦合约束的迭代可行
+性，以及整个系统的闭环稳定性。最后通过仿真实验比较了集中式模型预测控制
+方法和分布式模型预测控制方法的性能，对比表明在保证系统性能和集中式的性能接近
+的条件下，分布式方法大大缩短了优化时间，减小了在线计算量。
+
+2、研究了多个二阶非线性系统的分布式模型预测一致控制问题，智能体系统
+之间存在成本耦合，所有智能体共享一个参考轨迹。利用同步更新策略，
+提出了改进的相容性约束上界，保证系统的收敛性；在分布式结构下，利用参考轨迹，
+设计了每个智能体的终端成本、终端控制器和正定不变的终端集。提出了分布式优化算法，保证优化问题的迭代可行性和整个系统的闭环收敛性。最后，以2-自由度机械臂为例，通过仿真实验验证了算法的有效性。
+
+3、研究了多个线性二阶系统的分布式模型预测编队控制问题，每个智能体到
+达各自的目标位置形成队形，智能体系统之间存在耦合成本，且需要满足避碰约束。利
+用同步更新策略，设计了改进的相容性约束，包括位置相容性和状态相容性，同时提出了改进的避碰约束。充分利用系统模型的特点和编队目标，设计了分布式结构下的终端成分，并且在终端集中依然能保证避碰约束的满足。提出了分布式优化算法，保证优化问题的迭代可行性、整个系统的闭环收敛性以及避碰约
+束的满足。最后通过仿真实验验证了算法的有效性。
+
+最后，归纳总结了本文的主要工作，并对今后的工作进行了展望。
+
+\vskip 0.3cm \textbf{关键词}: 模型预测控制；分布式控制；终端成本；终端控制器； 终端集。
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                英文摘要
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+$\\$ \centerline{\large \zihao{3}\heiti\hbox{Abstract}}
+
+In the practical applications, the complex systems have the features of complex model, large scale, a great amount of variables and constraints. However, the traditional control methods cannot satisfy the requirements of the complex systems. Over the past years, distributed model predictive control (DMPC) is becoming an important tool to handle the large-scale complex systems due to its good control performance, capability of handling constraints and the structural
+flexibility. In the embryonic stage, the research of DMPC is confronted with many difficulties. For example, how to deal with the couplings between subsystems in order to make the optimization problem of each subsystem solvable; how to design the terminal ingredients (terminal cost, terminal controller and positive invariant terminal set) for each subsystem; how to guarantee the recursive feasibility and the closed-loop stability of the whole system.
+
+Motivated by this, this dissertation focuses on the research of DMPC for multi-agent systems and explores the problems of regulation, consensus and formation, respectively. The
+main contents and results in this dissertation are summarized as follows:
+
+1. A DMPC algorithm is presented for the regulation of linear multi-agent systems with the coupled cost and coupled constraints. At each sampling time, all the agents are permitted to synchronously optimise. An improved compatibility constraint is constructed to ensure the consistency between the actual state trajectory of each agent and its assumed one. With the parameters of the coupled constraints, a positive invariant terminal set, which can definitely ensure the satisfaction of the coupled constraint, and an associated terminal cost (a local Lyapunov function) are
+designed in a distributed manner. By applying the proposed distributed optimization algorithm, the recursive feasibility with respect to both local and coupled constraints and the closed-loop stability of the whole system are guaranteed. In final, the numerical results of the comparisons between the DMPC algorithm and the centralised model predictive control (CMPC) are given to show the effectiveness of the proposed algorithm. The results show that the DMPC algorithm
+ not only dramatically decreases the optimizing time but also maintains
+most of the control performance of CMPC.
+
+2. A DMPC algorithm is investigated for the consensus of second-order nonlinear multi-agent systems with coupled cost. All the agents share one reference trajectory. With the synchronous update strategy, a time-varying compatibility constraint, which plays an important to ensure the stability, is presented to ensure that the actual state trajectory of each subsystem does not deviate too much from its assumed
+one. Furthermore, a positively invariant terminal region and a corresponding auxiliary controller are developed for each agent. Given the designed terminal ingredients and compatibility constraints, the recursive feasibility and closed-loop stability of the whole system are guaranteed. A numerical example of 2-Degree-of-Freedom (2-DoF) robotic manipulator illustrates the efficacy of the proposed algorithm.
+
+3. A DMPC algorithm is explored for the formation of second-order linear multi-agent systems with collision avoidance. With the synchronous update strategy, the improved compatibility constraints with respect to both the position compatibility and the state compatibility,  are designed for each agent. The collision avoidance constraints are tightened by replacing the actual positions of each agent's neighbors with their assumed ones. By using the second-order model and the formation, the terminal ingredients are designed. Particularly, the states in the positively invariant terminal sets satisfy the collision avoidance constraints. By implementing the proposed distributed optimization algorithm, the recursive feasibility of the optimization problem, the closed-loop stability of the whole system and the collision avoidance between agents are guaranteed. A numerical example illustrates the effectiveness of the proposed algorithm.
+
+At the end of this dissertation, the main results are concluded and the problems to
+be solved in the future are presented.
+
+\textbf{Keywords}: Model predictive control (MPC); Distributed control; Terminal cost;
+Terminal controller; Terminal set.
+
+
+\newpage

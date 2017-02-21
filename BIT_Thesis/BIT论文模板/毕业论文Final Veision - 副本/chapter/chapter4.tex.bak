@@ -1,0 +1,609 @@
+
+\chapter{多个线性二阶系统的分布式模型预测编队控制}
+
+\section{引言}
+编队是指设计合适的控制器，使得多个系统形成一定队形，编队既可以是动态的，也可以是静态的。编队控制是多智能体领域重要的问题。本章主要研究了多个线性二阶系统的分布式模型预测编队控制问题，每个智能体到达各自的目的地形成队形，同时智能体之间满足避碰约束。
+
+目前，分布式模型预测控制已经被用来研究多智能体的编队控制问题
+\cite{KeviczkyTTAC(2008),ChenJ(2009)}。文献\citep{GuD(2006)}利用模型预测控制研究了独轮车的跟踪问题，但是不能保证系统的可行性和稳定性。文献
+\citep{DunbarWBPHD(2004)}利用同步更新策略，研究了非线性系统的编队问题，但是其相容性约束是收缩的，极大地增加了解的保守性，而且没有考虑避碰问题。文献\citep{WangPTAC(2014)}和
+\citep{WangIJC(2014)}分别研究了多个非线性系统和多个线性系统的编队问题，并考虑了避碰任务，但是要求每个智能体都已知公共的参考轨迹，这限制了系统之间的拓扑结构。另外，二阶线性系统可以表示典型的车辆运动学关系，所以研究二阶线性系统的编队具有重要的现实意义。
+
+以上是本章工作的出发点。本章的主要贡献为：
+\begin{itemize}
+\item[(1)]在分布式结构下，充分利用系统模型的特点和编队目标，设计了解耦的终端成分，而且终端集内的状态满足避碰约束；
+\item[(2)]采用同步更新方式，在前两章的基础上，设计了改进的相容性约束上界，保证假设轨迹和实际轨迹的一致性；设计了分布式结构下的避碰约束；
+\item[(4)]分析了优化问题的迭代可行性和整个系统的闭环稳定性，以及避碰约束的满足情况，给出了严格的证明。
+\end{itemize}
+
+\begin{notation}
+$\mathbb{Z}_i$和$\mathbb{U}_i$分别表示状态允许集和输入允许集；$N_a$表示智能体的数量；$N$表示预测时域长度；$z(k+l|k)$表示在$k$时刻向前预测$l$步$z$的值；$\|z\|$表示向量$z$的$2$-范数，即$\|z\|=\sqrt{z^Tz}$。
+\end{notation}
+
+\section{问题的描述}
+ 本章考虑$N_a$个线性二阶多智能体系统：
+ \begin{eqnarray}
+\label{chap3_model}
+z_i(k+1)=Az_i(k)+Bu_i(k),  \ \ \forall i\in\mathbb{N}_a=\{1,2,\ldots,N_a\},k\geq0,
+\end{eqnarray}
+其中$z_i=[x_i;v_i]\in\mathbb{R}^{2n}$为智能体$i$的系统状态，$x_i\in\mathbb{R}^{n}$和$v_i\in\mathbb{R}^{n}$分别表示其位置和速度，$u_i\in\mathbb{R}^{n}$为系统输入（即加速度），$A=\left [\begin{array}{ccccc}
+I_n & I_n\\
+\textbf{0} & I_n
+\end{array}\right]$，$B=\left [\begin{array}{ccccc}
+0.5I_n\\
+I_n
+\end{array}\right]$。智能体$i$的状态和输入分别受到约束：
+$z_i\in \mathbb{Z}_i$ 和$u_i\in \mathbb{U}_i$，其中$\mathbb{Z}_i$为紧集，$\mathbb{U}_i$为闭集。
+
+本章的控制目标是让每个智能体到达指定位置形成编队，同时满足避碰要求，即：
+\begin{eqnarray}
+&\text{趋向目标位置}\ \ \lim_{k\rightarrow\infty}(x^d_i-x_i(k))=\textbf{0},& \label{chap3_desired position} \\
+&\text{编队}\ \ \lim_{k\rightarrow\infty}(x_j(k)-x_i(k))=d_{ij}, \forall j\in\mathcal{N}_i,& \label{chap3_desired position}\\
+&\text{避碰}\ \ \|x_j(k)-x_i(k)\|\geq 2R, \forall j\in\mathbb{N}_a\setminus i, k\geq0,& \label{chap3_collision avoidance}
+\end{eqnarray}
+其中$d_{ij}$表示智能体$i$和智能体$j$之间的期望相对位置，$\mathcal{N}_i=\{j\in\mathbb{N}_a\mid d_{ij}\text{为先验的}\}$表示智能体$i$的邻居的集合，$R$表示每个智能体的安全半径。令$z_{-i}=[z_{j_i}^T,\ldots,z_{j_{|\mathcal{N}_i|}}^T]^T$表示智能体$i$所有的邻居的状态构成的向量，即$j_k\in \mathcal{N}_i$，且$k=1,2,\ldots,|\mathcal{N}_i|$。
+
+
+为了保证控制目标的真实性，我们给出下面假设。
+\begin{assumption}
+\label{chap3_task assumption}
+编队目标、趋向目标位置和避碰三个任务之间是一致的，即
+ \begin{eqnarray}
+\label{chap3_task consistency}
+d_{ij}=x^d_j-x^d_i, \|d_{ij}\|\geq2R, \forall i\in\mathbb{N}_a, j\in\mathcal{N}_i.
+\end{eqnarray}
+\end{assumption}
+
+根据控制目标，给定权重参数$\alpha_i$、$\beta_i$和$\rho_i$，定义智能体$i$的理想成本函数为：
+\begin{eqnarray}
+\label{chap3_ideal cost}
+J_i(k,z_i,z_{-i},z^d_i,u_i)=\sum_{l=0}^{N-1}L_i(k+1|k,z_i,z_{-i},z^d_i,u_i)+L_{if}(z_i(k+N|k),z^d_i),
+\end{eqnarray}
+其中阶段成本为
+\begin{eqnarray}
+&&\hspace{-1.5cm}L_i(k+l|k,z_i,z_{-i},z^d_i,u_i)=\alpha_i\|z^d_i-z_i(k+l|k)\|^2
++\beta_i\sum_{j\in\mathcal{N}_i}\|z_j(k+l|k)\nonumber \\
+&&\hspace{3.4cm}-z_i(k+l|k)-d^z_{ij}\|^2+ \rho_i\|u_i(k+l|k)\|^2 \nonumber \\
+&&\hspace{3cm}=\alpha_i\|\Delta z_{i}(k+l|k)\|^2+\beta_i\sum_{j\in\mathcal{N}_i}\|z_{ij}(k+l|k)
+\|^2\nonumber \\
+&&\hspace{3.4cm}+\rho_i\|u_i(k+l|k)\|^2,\label{chap3_local cost}
+\end{eqnarray}
+$L_{if}(z_i(k+N|k),z^d_i)$为终端成本。
+为了简化，在方程（\ref{chap3_local cost}）中，$z^d_i=[x^d_i;\textbf{0}]\in\mathbb{R}^{2n}$，$d^z_{ij}=[d_{ij};\textbf{0}]\in\mathbb{R}^{2n}$，$\Delta z_{i}(k+l|k)=z^d_i-z_i(k+l|k)$，$z_{ij}(k+l|k)=z_j(k+l|k)-z_i(k+l|k)-d^z_{ij}$。而方程
+（\ref{chap3_terminal cost}）中的$P_i$为下面要设计的正定矩阵。
+
+\begin{table}[!t]
+\renewcommand\arraystretch{1.2}
+\centering
+\caption{\label{chap3_Table 1}智能体$i$的变量}
+\begin{tabular}{c|l}
+\hline
+$u_i^{*}(k+l|k)$ & 最优控制输入 \\
+\hline
+$z_i^{*}(k+l|k)$ & 最优状态 \\
+\hline
+$\tilde{u}_i(k+l|k)$  & 可行控制输入 \\
+\hline
+$\tilde{z}_i(k+l|k)$  & 可行状态  \\
+\hline
+$\hat{u}_i(k+l|k)$  & 假设控制输入  \\
+\hline
+$\hat{z}_i(k+l|k)$  & 假设状态  \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{分布式协同模型预测控制}
+和前两章相似，本章依然采用同步分布式模型预测控制。类似地，为了使优化问题可解，首先设计假设控制输入。定义变量如表\ref{chap3_Table 1}所示。
+智能体$i$的假设控制输入为：
+\begin{eqnarray}
+\label{chap3_assumed control input}
+  \hat{u}_i(k+l|k)=\left\{
+               \begin{array}{l}
+                u_i^{*}(k+l|k-1)    \qquad\qquad   l=0,1,\ldots,N-2 \\
+               \kappa_i(z^*_i(k-1+N|k-1))  ~ \ \ \ \ \qquad  l=N-1,\\
+               \end{array}
+             \right.
+\end{eqnarray}
+其中$\kappa_i(\cdot)$为终端控制器。
+
+
+相应地，假设状态为：
+\begin{eqnarray}
+\label{chap3_Eq.6}
+  \hat{z}_i(k+l|k)=\left\{
+               \begin{array}{l}
+                z_i^{*}(k+l|k-1) ,    \qquad\qquad    l=0,1,\ldots,N-1 \\
+                z_i^{\kappa}(k+N|k-1), \ \ \ \qquad l=N.\\
+               \end{array}
+             \right.
+\end{eqnarray}
+其中$z_i^{\kappa}(k+N|k-1)$是以$z^*_i(k-1+N|k-1)$为初值，带入终端控制器之后得到的状态。
+为了和$z_i$一致，令$\hat{z}_{-i}$为智能体$i$所有邻居假设状态构成的向量。
+
+
+\subsection{相容性约束的设计}
+类似于前两章，由于引入了假设轨迹，我们需要设计相容性约束来保证每个智能体的实际轨迹和假设轨迹偏差不大。在本章中，相容性约束有两部分组成：位置的相容性约束和状态的相容性约束。
+
+对于智能体$i$，定义$\mu_{ij}(k+l|k)=\frac{\|\hat{x}_j(k+l|k)-\hat{x}_i(k+l|k)\|-2R}{2}$，$l=0,1,\ldots,N-1$，$j\in\mathbb{N}_a\setminus i$和$\mu_{i}(k+l|k)=\min\limits_{j\in\mathbb{N}_a\setminus i}\mu_{ij}$。位置的相容性约束定义为：
+\begin{eqnarray}
+\|\hat{x}_i(k+l|k)-x_i(k+l|k)\|=\varepsilon^x_i(k+l|k)\leq\mu_i(k+l|k) \ \ l=0,1,\ldots,N-1. \label{chap3_compatibility constraints for position}
+\end{eqnarray}
+
+另外定义$\nu_i(k)=\frac{\sqrt{b^2_i-4a_ic_i}-b_i}{2a_i}$，其中$a_i=\sum_{j\in\mathcal{N}_i}(\beta_i+2\beta_j)$，$b_i=\sum_{j\in\mathcal{N}_i}(2\beta_j\varphi_{ji}(k))$，
+$c_i=-\frac{\gamma_i}{N-1}\alpha_i\|\Delta z_i(k|k)\|$，$\varphi_{ji}(k)=\max\limits_{l=1,2,\ldots,N-1}\|\hat{z}_j(k+l|k)-\hat{z}_i(k+l|k)-d_{ij}\|$，$0<\gamma_i<1$。
+智能体$i$状态的相容性约束为：
+\begin{eqnarray}
+\|\hat{z}_i(k+l|k)-z_i(k+l|k)\|=\varepsilon^z_i(k+l|k)\leq\nu_i(k) \ \ l=0,1,\ldots,N-1.  \label{chap3_compatibility constraints for state}
+\end{eqnarray}
+
+这两个相容性约束作用不同，（\ref{chap3_compatibility constraints for position}）主要是为了实现避碰，
+而（\ref{chap3_compatibility constraints for state}）主要是为了保证系统的稳定性。
+
+\begin{remark}
+和第二章、第三章设计的相容性约束的上界不同，除了（\ref{chap3_compatibility constraints for position}）之外，（\ref{chap3_compatibility constraints for state}）与每次优化的初始状态有关，而第二章和第三章的上界主要由假设轨迹的偏差决定。
+\end{remark}
+
+\subsection{避碰约束的设计}
+由于避碰约束（\ref{chap3_collision avoidance}）中包含其他智能体的实际状态，因此更新智能体的优化问题是不可解的。为了使得优化问题可解，我们希望能用假设状态替代其他智能体的实际状态，下面给出新的避碰约束。
+
+对于智能体$i$，由（\ref{chap3_compatibility constraints for position}）可得，
+\begin{eqnarray}
+&&\hspace{0.45cm}\|x_i(k+l|k)-x_j(k+l|k)\| \nonumber \\
+&&=\|x_i(k+l|k)-\hat{x}_j(k+l|k)+\hat{x}_j(k+l|k)-x_j(k+l|k)\| \nonumber \\
+&&\geq \|x_i(k+l|k)-\hat{x}_j(k+l|k)\|-\|\varepsilon^x_j(k+l|k)\|\nonumber\\
+&&\geq \|x_i(k+l|k)-\hat{x}_j(k+l|k)\|-\mu_{ij}(k+l|k), \ \ j\in\mathbb{N}_a\setminus i.
+\end{eqnarray}
+由上可得，如果
+\begin{eqnarray}
+\|x_i(k+l|k)-\hat{x}_j(k+l|k)\|\geq2R+\mu_{ij}(k+l|k), \ \ j\in\mathbb{N}_a\setminus i,\label{chap3_new collision avoidance}
+\end{eqnarray}
+则实际避碰约束
+（\ref{chap3_collision avoidance}）一定满足。
+
+
+
+\subsection{终端成分的设计}
+正如第二章和第三章提到的，终端成分对于系统稳定性和可行的满足有着至关重要的作用\cite{MayneDQ(2000)}。 下面给出本章的终端成分设计。
+
+终端控制器为
+\begin{eqnarray}
+\kappa_i(z)=K_{i1}z+K_{i2}z^d_i, \label{chap3_terminal controller}
+\end{eqnarray}
+将其带入模型（\ref{chap3_model}），可得误差模型如下：
+\begin{eqnarray}
+&&\Delta z_i(k+1)=A\Delta z_i(k)+(I-A)z^d_i-B(K_{i1}z_i(k)+K_{i2}z^d_i) \nonumber \\
+&&\hspace{2cm}=(A+BK_{i1})\Delta z_i(k)+(I-A-BK_{i1}-BK_{i2})z^d_i, \label{chap3_error model1}
+\end{eqnarray}
+如果以下两个条件满足
+\begin{itemize}
+\item[(1)] $\phi_i=A+BK_{i1}$稳定，
+\item[(2)]$(I-A-BK_{i1}-BK_{i2})z^d_i=\textbf{0}$，
+\end{itemize}
+则误差方程可写为：
+\begin{eqnarray}
+\Delta z_i(k+1)=\phi_i \Delta z_i(k). \label{chap3_error model}
+\end{eqnarray}
+条件（1）很容易满足，下面主要讨论条件（2）满足的可能性。
+为了方便，我们在此忽略下标，定义$L=K_{i1}+K_{i2}=[L_1 \ L_2]$，其中$L_1,L_2\in\mathbb{R}^{n}$。首先考虑$I-A=BL$成立的可能性，由$A$和$B$的具体形式可得，
+\begin{eqnarray}
+&&I-A=\left [\begin{array}{ccccc}
+\textbf{0} & \textbf{I}_2\\
+\textbf{0} & \textbf{0}
+\end{array}\right], \\
+&&BL=\left [\begin{array}{ccccc}
+0.5L_1 & 0.5L_2\\
+L_1 & L_2
+\end{array}\right].
+\end{eqnarray}
+考虑到控制任务中$z^d_i=[x^d_i;\textbf{0}]$，因此即使无法得到$L_2$的准确形式，依然可得，在当前控制任务下，当$L_1=\textbf{0}$时，$(I-A-BK_{i1}-BK_{i2})z^d_i=\textbf{0}$满足，即误差系统可得如
+\ref{chap3_error model}的形式。
+
+\begin{remark}
+在设计反馈增益$K_{i1}$和$K_{i2}$时，可以先设计$K_{i1}$使条件1满足，然后再将$K_{i1}$的前$n$列直接取反即可。
+\end{remark}
+
+
+另外，终端成本设计为
+\begin{eqnarray}
+L_{if}(z,z^d_i)=\|z^d_i-z\|^2_{P_i}.\label{chap3_terminal cost}
+\end{eqnarray}
+而终端集设计为
+\begin{eqnarray}
+\mathbb{Z}_{if}=\{z_i\mid\|\Delta z_i\|^2_{\Lambda_{i1}}+\rho_i\|z^d_i\|^2_{\Lambda_{i2}}\leq0, \|\Delta x_i\|\leq D_i\}, \label{chap3_terminal sets1}
+\end{eqnarray}
+其中$\Lambda_{i1}=\alpha_iI+\rho_iK^T_{i1}K_{i1}+\sum_{j\in\mathcal{N}_i}(\beta_i+\beta_j)I+\phi^T_iP_i\phi_i-P_i$，
+$\Lambda_{i2}=(K_{i1}+K_{i2})^T(K_{i1}+K_{i2})$，$D_i=\min\limits_{j\in\mathbb{N}_a\setminus i}\frac{d_{ij}-2R}{2}$。
+下面单独分析$\rho_i\|z^d_i\|^2_{\Lambda_{i2}}$这一项，由终端控制器需要满足的条件$L_1=\textbf{0}$所知，且$z^d_i=[x^d_i;\textbf{0}]$，所以$\rho_i\|z^d_i\|^2_{\Lambda_{i2}}=0$。因此终端集为
+\begin{eqnarray}
+\mathbb{Z}_{if}=\{z_i\mid\|\Delta z_i\|^2_{\Lambda_{i1}}\leq0, \|\Delta x_i\|\leq D_i\}. \label{chap3_terminal sets2}
+\end{eqnarray}
+
+在给出定理\ref{chap3_theorem 31}之前，首先给出下面的假设。
+\begin{assumption}
+$\kappa_i\in \mathbb{U}_i$\text{且}$\mathbb{Z}_{if}\subseteq\mathbb{Z}_i$。
+\end{assumption}
+
+\begin{theorem}
+\label{chap3_theorem 31}
+对于所有的$i=1,2,\ldots,N_a$，给定如上设计的终端控制器（\ref{chap3_terminal controller}）和负定矩阵$Q_i$，如果$P_i$ 是一个满足下面的李亚普诺夫方程的正定矩阵：
+\begin{eqnarray}
+\label{chap3_Lyapunov equation}
+\alpha_iI+\rho_iK^T_{i1}K_{i1}+\sum_{j\in\mathcal{N}_i}(\beta_i+\beta_j)I+\phi^T_iP_i\phi_i-P_i=Q_i,
+\end{eqnarray}
+那么终端集可以简化为
+\begin{eqnarray}
+\mathbb{Z}_{if}=\{z_i\mid\|\Delta x_i\|\leq D_i\}, \label{chap3_terminal sets}
+\end{eqnarray}
+同时，该终端集是一个正定不变集，且在该集合内的状态满足避碰约束；终端成本是一个局部李亚普诺夫函数（Local Lyapunov function）\cite{MayneDQ(2000)}使得对于$z_i(k)\in \mathbb{Z}_{if}$，
+\begin{eqnarray}
+\label{chap3_control-Lyapunov3}
+\sum_{i\in\mathbb{N}_a}(L(z_i(k),z_{-i}(k),z^d_i,u_i)+L_{if}(z_i(k+1),z^d_i)-L_{if}(z_i(k),z^d_i))\leq0.
+\end{eqnarray}
+\end{theorem}
+\begin{proof}
+当$P_i>0$满足李亚普诺夫方程（\ref{chap3_Lyapunov equation}）时，很容易得到$\Lambda_{i1}<0$，所以终端集中的第一个条件可以省略从而简化为（\ref{chap3_terminal sets}）的形式。另外当终端控制器为（
+\ref{chap3_terminal controller}）时，误差系统模型（\ref{chap3_error model}）为稳定的，所以对于任意的$z_i(k)\in \mathbb{Z}_{if}$，给定终端控制器（\ref{chap3_terminal controller}），终端集为正定不变集。
+
+对于任意的$z_i\in \mathbb{Z}_{if}$和$z_j\in \mathbb{Z}_{jf}$，
+\begin{eqnarray}
+&&\|x_i-x_j\|=\|x_i-x^d_i-(x_j-x^d_j)-d_{ij}\| \nonumber \\
+&&\hspace{1.8cm}\geq\|d_{ij}\|-\|\Delta x_j\|-\|\Delta x_j\| \nonumber\\
+&&\hspace{1.8cm}\geq 2R.
+\end{eqnarray}
+由此可得，终端集中的状态满足避碰约束。
+
+下面证明终端成本为局部李亚普诺夫函数。为了方便，将终端控制器写成$\kappa_i(z_i(k))=-K_{i1}\Delta z_i(k)+(K_{i1}+K_{i2})z^d_i$，对于任意的$z_i(k)\in \mathbb{Z}_{if}$，利用三角不等式，可得
+\begin{eqnarray}
+&&\hspace{0.5cm}\sum_{i\in\mathbb{N}_a}(L(z_i(k),z_{-i}(k),z^d_i,u_i)+L_{if}(z_i(k+1),z^d_i)-L_{if}(z_i(k),z^d_i)) \nonumber\\
+&&=\sum_{i\in\mathbb{N}_a}(\alpha_i\|\Delta z_i(k)\|^2+\rho_i\|\kappa_i(z_i(k))\|^2+\sum_{j\in\mathcal{N}_i}\beta_i\|z_{ij}(k)\|^2+\|\Delta z_i(k+1)\|^2_{P_i}-\|\Delta z_i(k)\|^2_{P_i})  \nonumber\\
+&&\leq\sum_{i\in\mathbb{N}_a}\alpha_i\|\Delta z_i(k)\|^2+\rho_i\|\Delta z_i(k)\|^2_{K_{i1}^TK_{i1}}+\rho_i\|z^d_i\|^2_{(K_{i1}+K_{i2})^T(K_{i1}+K_{i2})}\nonumber\\
+&&\hspace{0.5cm}+\sum_{j\in\mathcal{N}_i}(\beta_i+\beta_j)\|\Delta z_{i}(k)\|^2+\|\Delta z_i(k)\|^2_{\phi_i^TP_i\phi_i}-\|\Delta z_i(k)\|^2_{P_i})\nonumber\\
+&&=\sum_{i\in\mathbb{N}_a}(\|\Delta z_i(k)\|^2_{\Lambda_{i1}}+\|z^d_i\|^2_{\Lambda_{i2}})\nonumber\\
+&&\leq0
+\end{eqnarray}
+
+故结论得证。
+\end{proof}
+
+
+\begin{remark}
+终端集$\mathbb{Z}_{if}$由（\ref{chap3_terminal sets1}）演化到（\ref{chap3_terminal sets}）是由系统模型和本章研究的编队任务共同决定的。另外终端集的主要作用为满足避碰任务，仅与每个智能体的位置有关，而不是全部状态。
+\end{remark}
+
+\begin{remark}
+本章设计的终端集$\mathbb{Z}_{if}$的大小由$D_i$决定。如果两个智能体之间的期望相对距离非常接近$2R$，那么$D_i$将会很小，终端集的区域也会很小，此时优化问题的求解将会被受限。所以，这种设计方案具有一定保守性。
+\end{remark}
+\subsection{分布式实现算法}
+用其他智能体的假设状态代替成本和避碰约束里的实际预测状态，综合以上设计的相容性约束、避碰约束和终端成分，智能体$i$的优化问题为：
+
+{\bf 问题3} \quad 在$k$时刻，对于每个智能体$i=1,2,\ldots,N_a$，给定$z_i(k)$, $z^d_i$和 $\hat{z}_{-i}(k+l|k)$，$l=0,1,\ldots,N-1$，
+\begin{eqnarray*}
+J_i^*(k,z_i^*,\hat{z}_{-i},z^d_i,u_i^*)=\min_{u_i(k+l|k)}J_i(k,z_i,\hat{z}_{-i},z^d_i,u_i)
+\end{eqnarray*}
+使得对于所有的$l=0,1,\ldots,N-1$
+\begin{eqnarray}
+&&z_i(k|k)=z_i(k), \\
+&&z_i(k+l+1|k) = Az_i(k+l|k)+Bu_i(k+l|k), \label{chap3_constr31}\\
+&&z_i(k+l|k)\in\mathbb{Z}_i,  \label{chap3_constr32}\\
+&&u_i(k+l|k)\in\mathbb{U}_i,  \label{chap3_constr33}\\
+&&\|\hat{z}_j(k+l|k)-z_i(k+l|k)\|\geq2R+\mu_{i}(k+l|k), \ j\in\mathbb{N}_a\setminus i\label{chap3_constr34}\\
+&&\hspace{-0.6cm}\left\{
+               \begin{array}{l}
+               \|\hat{x}_i(k+l|k)-x_i(k+l|k)\|\leq\mu_i(k+l|k) \\
+               \|\hat{z}_i(k+l|k)-z_i(k+l|k)\|\leq\nu_i(k),\\
+               \end{array}
+             \right. \label{chap3_constr35}\\
+&&z_i(k+N|k)\in \mathbb{Z}_{if}\label{chap3_constr36}.
+\end{eqnarray}
+
+下面，我们将详细地描述同步分布式实现算法。
+
+\textbf{算法 3}
+
+\textbf{离线阶段}：对于每个智能体$i$，给定权重参数$\alpha_i$、$\rho_i$、$\beta_i$和参数$\gamma_i$、$d_{ij}$，选择合适的参数$K_{i1}$、$K_{i2}$和$Q_i$，计算出$P_i$和$D_i$。
+
+\textbf{在线阶段}：在初始时刻$k=0$时，给定初始最优解$u_i^*(l|0)$和初始最优轨迹$z_i^*(l|0)$，$l=0,1,\ldots,N-1$。
+
+(i) 在$k$时刻，$k\geq 0$，每个智能体$i$
+\begin{itemize}
+\item 实施实际轨迹$z_i(k+1)=z_i^*(1|k)$；
+
+\item 计算假设控制输入$\hat{u}_i(k+1+l|k+1)$和假设轨迹$\hat{z}_i(k+1+l|k+1)$， $l=0,1,\ldots,N-1$；
+
+\item 将$\hat{z}_i(\cdot)$传递给其他所有智能体，接收来自其他智能体的$\hat{z}_j(\cdot)$，$j\in\mathbb{N}_a\setminus i$；
+\end{itemize}
+
+(ii) 在下一个采样时刻$k+1$，$k\geq0$，每个智能体$i$
+\begin{itemize}
+
+\item 采样当前状态$z_i(k+1)$；
+
+\item 计算$\mu_{ij}(k+1+l|k+1)$、$\mu_{i}(k+1+l|k+1)$和$\nu_i(k+1)$，$j\in\mathbb{N}_a\setminus i$；
+
+\item 求解\textbf{问题3}，得到最优控制输入$u_i^*(k+1+l|k+1)$和最优轨迹$z_i^*(k+1+l|k+1)$， $l=0,1,\ldots,N-1$。
+\end{itemize}
+
+(iii) 返回(i).
+
+\section{主要结果}
+本节主要讨论整个系统的迭代可行性和闭环稳定性。
+\begin{theorem}
+在每个采样时刻$k$，所有动力学模型如（\ref{chap3_model}）的智能体同步求解各自的优化问题。如果在初始时刻$k=0$，每个智能体都存在一个可行解，那么对于所有的$k$，$k\geq1$，其优化问题均可行。进一步地，每个智能体渐近形成编队，到达自己的目标位置，且在行进过程中可以实现避碰，即当$k\rightarrow \infty$，对于所有的$i=1,\ldots,N_a$，$x_i(k)\rightarrow x^d_i$，$x_j(k)-x_i(k)\rightarrow d_{ij}$，$\forall j\in\mathcal{N}_i$，且 对于$k\geq0$，$\|x_j(k)-x_i(k)\|\geq 2R$， $\forall j\in\mathbb{N}_a\setminus i$。
+\end{theorem}
+\begin{proof}
+首先分析系统的迭代可行性。在$k$时刻，如果智能体$i$的优化问题是可行的，令$u^*_i(k+l|k)$为最优的控制输入，$z^*_i(k+l|k)$为最优的状态轨迹，$l=0,1,\ldots,N-1$。我们由（\ref{chap3_assumed control input}）可得假设控制输入$\hat{u}_i(k+1+l|k+1)$。令$\tilde{u}_i(k+1+l|k+1)=\hat{u}_{i}(k+1+l|k+1)$作为$k+1$时刻的控制输入。相应地，令$\tilde{z}_{i}(k+1+l|k+1)=\hat{z}_{i}(k+1+l|k+1)$。 我们很容易得到，对于$l=0,1,\ldots,N-1$，$\tilde{u}_{i}(\cdot)$和$\tilde{z}_{i}(\cdot)$满足约束（
+\ref{chap3_constr31}）—（\ref{chap3_constr35}）。进一步地，由定理\ref{chap3_theorem 31}可得终端集是正定不变集，因此$\tilde{z}_{i}(k+1+N|k+1)$一定满足终端约束（\ref{chap3_constr36}）。所以$\tilde{u}_{i}(\cdot)$在时刻$t_{k+1}$对智能体$i$是可行的，即初始可行一定可得迭代可行。
+
+下面分析整个系统的闭环稳定性。定义李亚普诺夫函数为所有智能体最优成本的和，即
+\begin{eqnarray}
+\label{chap3_Lyapunov function3}
+J_{\sum}^*(k)=\sum_{i=1}^{N_a}J_i^*(k,z_i^*,\hat{z}_{-i},z^d_i,u_i^*).
+\end{eqnarray}
+定义$\tilde{u}_i(k+1+l|k+1)=\hat{u}_i(k+1+l|k+1)$，$l=0,1,\ldots,N-1$为时刻$k+1$的可行解。因此，由（\ref{chap3_control-Lyapunov3}）可得
+\begin{eqnarray}
+\label{chap3_Eq.26}
+&&\hspace{0.5cm}J_{\sum}^*(k+1)-J_{\sum}^*(k) \nonumber \\
+&&\leq\sum_{i=1}^{N_a}(J_i(k+1,\tilde{z}_i,\hat{z}_{-i},z^d_i,\tilde{u}_i)-J_i^*(k,z_i^*,\hat{z}_{-i},z^d_i,u_i^*))\nonumber \\
+&&=\sum_{i=1}^{N_a}\{\sum_{l=0}^{N-1}(L_i(k+1+l|k+1,\tilde{z}_i,\hat{z}_{-i},z^d_i,\tilde{u}_i)-L_i(k+l|k,z_i^*,\hat{z}_{-i},z^d_i,u_i^*))
+\nonumber \\
+&&\hspace{0.5cm}+L_{if}(\tilde{z}_i(k+1+N|k+1),z^d_i)-L_{if}(\tilde{z}_i(k+N|k),z^d_i)\}\nonumber \\
+&&=\sum_{i=1}^{N_a}\{\sum_{l=1}^{N-1}(L_i(k+l|k,z^*_i,z^*_{-i},z^d_i,u^*_i)-L_i(k+l|k,z_i^*,\hat{z}_{-i},z^d_i,u_i^*))
+\nonumber \\
+&&\hspace{0.5cm}-L_i(k|k,z^*_i,\hat{z}_{-i},z^d_i,u^*_i)+L_i(k+N|k,z^*_i,z^*_{-i},z^d_i,u^*_i)\nonumber \\
+&&\hspace{0.5cm}+L_{if}(z^{\kappa}_i(k+1+N|k),z^d_i)-L_{if}(z^*_i(k+N|k),z^d_i)\}\nonumber\\
+&&\leq\sum_{i=1}^{N_a}\{\sum_{l=1}^{N-1}\sum_{j\in\mathcal{N}_i}\beta_i(\|z_{ij}^*(k+l|k)\|^2-\|\hat{z}^*_{ij}(k+l|k)\|^2)-\alpha_i\|\Delta z_i(k|k)\|^2\}.
+\nonumber
+\end{eqnarray}
+
+根据三角不等式和相容性约束，可得
+\begin{eqnarray}
+&&\hspace{0.5cm}\sum_{i=1}^{N_a}\sum_{l=1}^{N-1}\sum_{j\in\mathcal{N}_i}\beta_i(\|z_{ij}^*(k+l|k)\|^2-\|\hat{z}^*_{ij}(k+l|k)\|^2)\nonumber\\
+&&\leq\sum_{i=1}^{N_a}\sum_{l=1}^{N-1}\sum_{j\in\mathcal{N}_i}\beta_i(\|\varepsilon^z_j(k+l|k)\|^2+2\|\varepsilon^z_j(k+l|k)\|\|\hat{z}^*_{ij}(k+l|k)\|)\nonumber\\
+&&\leq\sum_{i=1}^{N_a}\sum_{l=1}^{N-1}\sum_{j\in\mathcal{N}_i}\beta_i(\|\varepsilon^z_j(k+l|k)\|^2+2\|\varepsilon^z_j(k+l|k)\|(\|\varepsilon^z_i(k+l|k)\|+\varphi_{ij}))\nonumber \\
+&&\leq\sum_{i=1}^{N_a}\sum_{l=1}^{N-1}\sum_{j\in\mathcal{N}_i}\beta_i(2\|\varepsilon^z_j(k+l|k)\|^2
++2\varphi_{ij}\|\varepsilon^z_j(k+l|k)\|+\|\varepsilon^z_i(k+l|k)\|^2)\nonumber \\
+&&=\sum_{i=1}^{N_a}\sum_{l=1}^{N-1}\sum_{j\in\mathcal{N}_i}[(\beta_i+2\beta_j)\|\varepsilon^z_i(k+l|k)\|^2+2\beta_j\varphi_{ji})\|\varepsilon^z_i(k+l|k)\|]\nonumber\\
+&&\leq\sum_{i=1}^{N_a}(N-1)[\sum_{j\in\mathcal{N}_i}(\beta_i+2\beta_j)\nu_i^2(k)+2\sum_{j\in\mathcal{N}_i}\beta_j\varphi_{ji}\nu_i(k)]\nonumber \\
+&&\leq\sum_{i=1}^{N_a}\gamma_i\alpha_i\|\Delta z_i(k|k)\|^2.
+\end{eqnarray}
+
+因此，
+\begin{eqnarray}
+J_{\sum}^*(k+1)-J_{\sum}^*(k)\leq-\sum_{i=1}^{N_a}(1-\gamma_i)\alpha_i\|\Delta z_i(k|k)\|^2.
+\end{eqnarray}
+所以整个系统是渐近稳定的。另外，考虑到约束（\ref{chap3_new collision avoidance}）和（
+\ref{chap3_terminal sets}）的作用，在每个时刻智能体之间可以实现避碰。
+\end{proof}
+
+\section{仿真结果和分析}
+本节考虑$6$个二阶智能体的编队。仿真同样利用工具箱ICLOCS\cite{FalugiP(2010)}和IPOPT \cite{WachterA(2010)}。关联矩阵$\mathcal{E}$取值为
+\begin{eqnarray*}
+\mathcal{E}=
+\left[
+  \begin{array}{cccccc}
+    0 & 1 & 0 & 0 & 0 & 1 \\
+    1 & 0 & 1 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 1 & 0 & 1 & 0 \\
+    0 & 0 & 0 & 1 & 0 & 1 \\
+    1 & 0 & 0 & 0 & 1 & 0 \\
+  \end{array}
+\right].
+\end{eqnarray*}
+对于矩阵$\mathcal{E}$中的元素$e_{ij}$，$e_{ij}=1$表示智能体$j$为智能体$i$的邻居。另外，其他参数选择为：
+\begin{eqnarray*}
+&N=10, \quad  \alpha_i=1,\quad  \beta_i=0.1, \quad \rho_i=0.1, \quad \gamma_i=0.9, \quad R=0.25, \\
+&\mathbb{U}_i=\{u_i|-0.5\leq u_{i1},u_{i2}\leq 0.5\}.
+\end{eqnarray*}
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.6\textwidth]{figures/chap4_trajectory}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{所有智能体的轨迹}
+ \label{chap3_Fig.41}
+ \vspace{-0.4cm}
+\end{figure}
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.6\textwidth]{figures/chap4_collision_avoidance}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{其他智能体和智能体$1$之间的相对距离}
+ \label{chap3_Fig.42}
+ \vspace{-0.4cm}
+\end{figure}
+
+
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.6\textwidth]{figures/chap4_input1}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{所有智能体的控制输入$u_{i1}$}
+ \label{chap3_Fig.43}
+ \vspace{-0.4cm}
+\end{figure}
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.6\textwidth]{figures/chap4_input2}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{所有智能体的控制输入$u_{i2}$}
+ \label{chap3_Fig.44}
+ \vspace{-0.4cm}
+\end{figure}
+
+每个智能体的初始状态为：
+\begin{eqnarray*}
+z_1(0)&=&
+\left[
+  \begin{array}{cccc}
+3& 4& -0.5& 0.5 \\
+  \end{array}
+\right]^T,\\
+z_2(0)&=&
+\left[
+  \begin{array}{cccc}
+-3& 5& 0.5& 0.5 \\
+  \end{array}
+\right]^T, \\
+z_3(0)&=&
+\left[
+  \begin{array}{cccc}
+-5& 1& 0& 0.5 \\
+  \end{array}
+\right]^T,\\
+z_4(0)&=&
+\left[
+  \begin{array}{cccc}
+-2& -3& -0.5& 0.5 \\
+  \end{array}
+\right]^T, \\
+z_5(0)&=&
+\left[
+  \begin{array}{cccc}
+3& -4& -0.5& -0.5 \\
+  \end{array}
+\right]^T,\\
+z_6(0)&=&
+\left[
+  \begin{array}{cccc}
+4& 1& 0& 0 \\
+  \end{array}
+\right]^T.
+\end{eqnarray*}
+其目标位置分别为：
+\begin{eqnarray*}
+&&x^d_1=
+\left[
+  \begin{array}{cccc}
+0 & 0 \\
+  \end{array}
+\right]^T,\ \
+x^d_2=
+\left[
+  \begin{array}{cccc}
+1 & 0 \\
+  \end{array}
+\right]^T, \\
+&&x^d_3=
+\left[
+  \begin{array}{cccc}
+2 & 1 \\
+  \end{array}
+\right]^T, \ \
+x^d_4=
+\left[
+  \begin{array}{cccc}
+1 & 2 \\
+  \end{array}
+\right]^T, \\
+&&x^d_5=
+\left[
+  \begin{array}{cccc}
+0 & 2 \\
+  \end{array}
+\right]^T, \ \
+x^d_6=
+\left[
+  \begin{array}{cccc}
+-1 & 1 \\
+  \end{array}
+\right]^T.
+\end{eqnarray*}
+邻居间期望的相对位置为：
+\begin{eqnarray*}
+&&d_{12}=
+\left[
+  \begin{array}{cccc}
+1 & 0 \\
+  \end{array}
+\right]^T,\ \
+d_{16}=
+\left[
+  \begin{array}{cccc}
+-1 & 1 \\
+  \end{array}
+\right]^T, \\
+&&d_{21}=
+\left[
+  \begin{array}{cccc}
+-1 & 0 \\
+  \end{array}
+\right]^T,\ \
+d_{23}=
+\left[
+  \begin{array}{cccc}
+1 & 1 \\
+  \end{array}
+\right]^T, \\
+&&d_{32}=
+\left[
+  \begin{array}{cccc}
+-1 & -1 \\
+  \end{array}
+\right]^T,\ \
+d_{34}=
+\left[
+  \begin{array}{cccc}
+-1 & 1 \\
+  \end{array}
+\right]^T,\\
+&&d_{43}=
+\left[
+  \begin{array}{cccc}
+1 & -1 \\
+  \end{array}
+\right]^T,\ \
+d_{45}=
+\left[
+  \begin{array}{cccc}
+-1 & 0 \\
+  \end{array}
+\right]^T, \\
+&&d_{54}=
+\left[
+  \begin{array}{cccc}
+1 & 0 \\
+  \end{array}
+\right]^T, \ \
+d_{56}=
+\left[
+  \begin{array}{cccc}
+-1 & -1 \\
+  \end{array}
+\right]^T, \\
+&&d_{65}=
+\left[
+  \begin{array}{cccc}
+1 & 1 \\
+  \end{array}
+\right]^T, \ \
+d_{61}=
+\left[
+  \begin{array}{cccc}
+1 & -1 \\
+  \end{array}
+\right]^T.
+\end{eqnarray*}
+
+
+
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.6\textwidth]{figures/chap4_cost}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{整个系统的成本}
+ \label{chap3_Fig.45}
+ \vspace{-0.4cm}
+\end{figure}
+
+仿真结果如图\ref{chap3_Fig.41}-图\ref{chap3_Fig.45}。图\ref{chap3_Fig.41}表示每个智能体的运行轨迹，从初始位置出发最终形成了正六边性的队形，且达到了各自的目标位置。
+以智能体$1$为例，图\ref{chap3_Fig.42}表示其他智能体和智能体$1$之间的相对距离，虚线表示安全距离，因此在行进过程中智能体之间完成了避碰任务。图\ref{chap3_Fig.43}-图\ref{chap3_Fig.44}表示每个智能体的控制输入，虚线表示输入上下界，由图可知，控制输入满足输入约束。在图\ref{chap3_Fig.45} 中，我们可以看出整个系统的成本渐进收敛到$0$，因此整个系统是渐进稳定的。总的来说，仿真结果证明了所提出算法的有效性。
+
+
+
+\section{本章小结}
+
+本章主要研究了多个线性二阶系统的分布式模型预测编队控制问题，每个智能体到达各自的目标位置形成队形，智能体系统之间存在耦合成本，且需要满足避碰约束。利用同步更新策略，提出了改进的相容性约束上界和改进的避碰约束；充分利用系统模型的特点和编队目标，设计了每个智能体的终端成分，并给出了其需要满足的条件；给出了分布式优化算法；分析了优化问题的迭代可行性、整个系统的闭环收敛性以及避碰约束的满足情况；最后通过仿真实验验证了算法的有效性。

@@ -1,0 +1,506 @@
+
+\chapter{多个二阶非线性系统的分布式模型预测一致控制}
+
+\section{引言}
+一致是指设计合适的控制器，使多个系统的状态收敛到同一轨迹，可以是静态的也可以是动态的。在某种程度上，上章研究的调节问题可以看作是一致问题的一个特殊情况，但是通常情况下，两个问题分开研究。本章主要研究了多个二阶非线性系统的分布式模型预测一致控制问题，所有智能体共享一个参考轨迹。
+
+在现存的文献中，分布式模型预测控制已经被用来研究多智能体系统的一致性。文献
+\citep{KeviczkyTConsensus(2008)}利用逐步次梯度方法计算出最优一致点，并且给出了全局一致协议没有达成情况下系统收敛的条件。
+文献\citep{FerrariTrecateG(2009)}提出了研究了一阶积分器和二阶积分器的一致问题，给出了最优路径的几何分析，保证了可行性和稳定性。文献\citep{JohanssonB(2006)}和\citep{SummersTH(2012)}主要通过改变乘子的方向来保证多智能体系统一致的实现。以上工作主要研究的线性系统的一致问题，而实际应用中大部分系统是非线性系统的，其中二阶非线性系统可以表示很多实际系统，比如无人车、机械臂和飞行器等。另外目前多个非线性系统的分布式模型预测控制的文献很少，其终端成分的设计、可行性和稳定性的分析等均存在巨大挑战。
+
+以上为本章工作的主要动机。本章的主要贡献为：
+\begin{itemize}
+\item[(1)]在分布式结构下，假设系统是Lipschitz连续的，充分利用参考轨迹，设计了每个非线性系统的终端成分，包括终端成本、终端控制器和正定不变的终端集；
+\item[(2)]采用同步更新方式，在上一章的基础上，设计了改进的相容性约束上界，保证假设轨迹和实际轨迹偏差有限；
+\item[(3)]分析了优化问题的迭代可行性，以及整个系统的闭环稳定性，给出了严格的证明。
+\end{itemize}
+
+\begin{notation}
+$\mathbb{Z}_i$和$\mathbb{U}_i$分别表示状态允许集和输入允许集；$0<T<\infty$表示预测时域；$0< \delta = t_{k+1}-t_k \leq T$表示采样周期；$z(\tau | t_k)$表示在$t_k$时刻预测$\tau$时刻$z$的值；$\|z\|$表示向量$z$的$2$-范数，即$\|z\|=\sqrt{z^Tz}$。
+\end{notation}
+
+\section{问题的描述}
+考虑$N_a$个动态解耦的二阶非线性系统：
+\begin{eqnarray}
+\label{chap2_Eq.1}
+\left\{
+               \begin{array}{l}
+                \dot{x}_{i} = v_{i} \\
+               \dot{v}_{i} = f(t,x_{i},v_{i})+u_i \ \ i=1,2,\ldots,N_a,\\
+               \end{array}
+             \right.
+\end{eqnarray}
+其中$x_{i}, v_{i}\in \mathbb{R}^{n}$为智能体$i$的状态，$u_i\in \mathbb{R}^n$为其控制输入。在特定情况下，$x_{i}$可以表示智能体$i$的位置，$v_{i}$表示速度。
+
+每个智能体$i$被标记为图$\mathcal{G}=\{\mathbb{N}_a, \mathcal{E}, \mathcal{A}\}$的一个顶点，其中$\mathbb{N}_a=\{1,2,\ldots,N_a\}$为顶点的集合，边的集合$\mathcal{E}\subseteq \{(i,j)\in \mathbb{N}_a\times\mathbb{N}_a\mid i\neq j\}$表示智能体之间的连接拓扑，相邻矩阵$\mathcal{A}$的元素$a_{ij}\geq 0$被定义为$a_{ij}>0 \Leftrightarrow (i,j)\in \mathcal{E}$。假设图$\mathcal{G}$为无向图，即$a_{ij}=a_{ji}$。定义智能体$i$的邻居的集合为$\mathcal{N}_i=\{j\in \mathbb{N}_a\mid(i,j)\in \mathcal{E}\}$，智能体$i$的邻居的数量为$|\mathcal{N}_i|$。不失一般性，本章假设智能体$i$与其邻居通过约束或成本耦合，且智能体$i$可以与其邻居通信。
+
+假设参考轨迹由一个虚拟智能体产生：
+\begin{eqnarray}
+\label{chap2_Eq.2}
+\left\{
+               \begin{array}{l}
+                \dot{x}_{r} = v_{r} \\
+               \dot{v}_{r} = f(t,x_{r},v_{r}),\\
+               \end{array}
+             \right.
+\end{eqnarray}
+其中$x_{r}, v_{r}\in \mathbb{R}^{n}$为参考状态。在本章中，我们假设所有智能体都能提前获得参考轨迹。
+
+定义$z_i=[x_i^T, v_i^T]^T\in\mathbb{R}^{2n}$和$z_r=[x_r^T, v_r^T]^T\in\mathbb{R}^{2n}$。进一步，令$z_{-i}=[z_{j_i}^T,\ldots,z_{j_{|\mathcal{N}_i|}}^T]^T$表示智能体$i$所用的邻居的状态构成的向量，即$j_k\in \mathcal{N}_i$，且$k=1,2,\ldots,|\mathcal{N}_i|$。整个系统的控制目标为：当$t\rightarrow \infty$，对于所有的$i,j=1,\ldots,N_a$，$\|z_i-z_j\|\rightarrow 0$且$\|z_i-z_r\|\rightarrow 0$。
+
+给定权重参数$\alpha_i$、$\beta_i$和$\gamma_i$，智能体$i$的理想成本函数定义为：
+\begin{eqnarray}
+\label{chap2_Eq.3}
+J_i(t_k,z_i,z_{-i},z_r,u_i)=\int_{t_k}^{t_k+T}L_i(\tau|t_k,z_i,z_{-i},z_r,u_i)d\tau+L_{if}(z_i(t_k+T|t_k),z_r(t_k+T)),
+\end{eqnarray}
+其中阶段成本
+\begin{eqnarray}
+&&L_i(\tau|t_k,z_i,z_{-i},z_r,u_i)=\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\|z_i(\tau|t_k)-z_j(\tau|t_k)\|^2
+\nonumber \\
+&&\hspace{4.2cm}+\beta_i\|z_i(\tau|t_k)-z_r(\tau)\|^2+ \gamma_i\|u_i(\tau|t_k)\|^2, \label{chap2_Eq.4}
+\end{eqnarray}
+终端成本$L_{if}(z_i(\tau|t_k),z_r(\tau))$为连续可微的函数。
+
+
+\section{分布式模型预测控制}
+和上章类似，本章假设所有智能体同步求解各自的优化问题，然而在存在耦合成本的情况下，更新智能体不可能得到其邻居的实际预测状态，因此优化问题不可解。为了解决这个问题，我们引入假设轨迹的概念。代替传递实际的预测轨迹，每个智能体计算传递各自的假设轨迹给自己的邻居。为了区别假设输入和最优输入，我们首先给出一些符号说明，如表\ref{chap2_Table 1}所示。
+\begin{table}[!t]
+\renewcommand\arraystretch{1.2}
+\centering
+\caption{\label{chap2_Table 1}智能体$i$的变量}
+\begin{tabular}{c|l}
+\hline
+$u_i^{*}(\tau|t_k)$ & 最优控制输入 \\
+\hline
+$z_i^{*}(\tau|t_k)$ & 最优状态 \\
+\hline
+$\tilde{u}_i(\tau|t_k)$  & 可行控制输入 \\
+\hline
+$\tilde{z}_i(\tau|t_k)$  & 可行状态  \\
+\hline
+$\hat{u}_i(\tau|t_k)$  & 假设控制输入  \\
+\hline
+$\hat{z}_i(\tau|t_k)$  & 假设状态  \\
+\hline
+\end{tabular}
+\end{table}
+
+相似地，分别定义最优预测轨迹和假设预测轨迹为$z_i^{*}(\tau|t_k)$和$\hat{z}_i(\tau|t_k)$。在MPC框架下，最优控制输入的第一部分一般被作为实际控制输入，即实施$u_i^{*}(\tau|t_k)$，$\tau\in [t_k,t_{k+1})$，我们可得到实际的状态$z_i(\tau|t_k)=z_i^{*}(\tau|t_k)$，$\tau\in [t_k,t_{k+1}]$。
+
+和\citep{DunbarWBAuto(2006),DunbarWBPHD(2004)}类似，假设的参考轨迹定义为：
+\begin{eqnarray}
+\label{chap2_Eq.5}
+  \hat{u}_i(\tau|t_k)=\left\{
+               \begin{array}{l}
+                u_i^{*}(\tau|t_{k-1})   \qquad\qquad\qquad    \tau\in[t_k,t_{k-1}+T), \\
+               \kappa_i(z_i^{\kappa}(\tau|t_{k-1}),z_r(\tau))    \ \ \quad\tau\in[t_{k-1}+T,t_k+T],\\
+               \end{array}
+             \right.
+\end{eqnarray}
+其中$\kappa_i(z_i^{\kappa}(\tau|t_{k-1}),z_r(\tau))$是与终端状态$z_i^{\kappa}(\tau|t_{k-1})$和参考状态$z_r(\tau)$相关的终端控制器。而终端状态$z_i^{\kappa}(\tau|t_{k-1})$是根据动力学方程
+（\ref{chap2_Eq.1}），以$z_i^{\kappa}(t_{k-1}+T|t_{k-1})=z_i^*(t_{k-1}+T|t_{k-1})$为起始状态，输入为$u_i(\tau|t_k)=\kappa_i(z_i^{\kappa}(\tau|t_{k-1}),z_r(\tau))$计算得到的。相应的，假设预测轨迹定义为：
+\begin{eqnarray}
+\label{chap2_Eq.6}
+  \hat{z}_i(\tau|t_k)=\left\{
+               \begin{array}{l}
+                z_i^{*}(\tau|t_{k-1})    \qquad\qquad    \tau\in[t_k,t_{k-1}+T), \\
+                z_i^{\kappa}(\tau|t_{k-1}) \qquad\qquad \tau\in[t_{k-1}+T,t_k+T].\\
+               \end{array}
+             \right.
+\end{eqnarray}
+为了和$z_i$一致，令$\hat{z}_{-i}$为智能体$i$所有邻居假设状态构成的向量。
+
+{\bf 问题2} \quad 在$t_k$时刻，对于每个智能体$i=1,2,\ldots,N_a$，给定$z_i(t_k)$、$z_r(\tau)$和 $\hat{z}_{-i}(\tau|t_k)$，$\tau\in[t_k,t_k+T]$，
+\begin{eqnarray*}
+J_i^*(t_k,z_i^*,\hat{z}_{-i},z_r,u_i^*)=\min_{u_i(\tau|t_k)}J_i(t_k,z_i,\hat{z}_{-i},z_r,u_i)
+\end{eqnarray*}
+使得对于所有的$\tau\in[t_k,t_k+T]$
+\begin{eqnarray}
+&&z_i(t_k|t_k)=z_i(t_k), \\
+&&\left\{
+               \begin{array}{l}
+                    \dot{x}_{i}(\tau|t_k) = v_{i}(\tau|t_k)  \\
+                    \dot{v}_{i}(\tau|t_k) = f_i(\tau,x_{i}(\tau|t_k),v_{i}(\tau|t_k))+u_i(\tau|t_k),  \\
+               \end{array}
+             \right.  \\
+&&z_i(\tau|t_k)\in\mathbb{Z}_i,  \\
+&&u_i(\tau|t_k)\in\mathbb{U}_i,  \\
+&&\|z_i(\tau|t_k)-\hat{z}_i(\tau|t_k)\|^2\leq\xi^2_i(t_k), \label{chap2_Eq.7}\\
+&&z_i(t_k+T|t_k)\in \mathbb{Z}_{if}(t_k),  \label{chap2_Eq.8}
+\end{eqnarray}
+其中$\mathbb{Z}_i$是凸集，$\mathbb{U}_i$为包含原点的凸集，（\ref{chap2_Eq.7}）表示相容性约束，$\mathbb{Z}_{if}(t_k)$ 表示终端集。
+
+\subsection{相容性约束的设计}
+正如上章提到的，相容性约束主要保证智能体的假设轨迹不能偏离实际轨迹过远。除此之外，它在确保系统收敛性中也起到了重要作用。
+
+令$\sigma_i(t_k)=\max\limits_{j\in\mathcal{N}_i}\max\limits_{\tau\in[t_k,t_k+T]}\|\hat{z}_i(\tau|t_k)-\hat{z}_j(\tau|t_k)\|$ 和$\iota_i(t_k)=\min\limits_{j\in\mathcal{N}_i}\min\limits_{\tau\in[t_k,t_{k+1}]}\|\hat{z}_i(\tau|t_k)-\hat{z}_j(\tau|t_k)\|$。
+$\sigma_i(t_k)$表示时间区间$[t_k,t_k+T]$内智能体$i$的假设轨迹和它的邻居的假设轨迹之间的最大偏差。相似地，$\iota_i(t_k)$表示时间区间$[t_k,t_{k+1}]$内智能体$i$的假设轨迹和它的邻居的假设轨迹之间的最小偏差。
+
+令$\Delta_{i}(t_k)=\frac{T-\delta}{\delta\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}}\sum_{j\in\mathcal{N}_i}\alpha_ja_{ij}(2\sigma_j(t_k)+\sigma_i(t_k))$。
+为了保证收敛性，相容性约束的上界需要满足下面不等式：
+\begin{eqnarray}
+\label{chap2_Eq.23}
+0<\xi_i(t_k)<\frac{2\iota_i(t_k)+\Delta_{i}(t_k)-\sqrt{(2\iota_i(t_k)+\Delta_{i}(t_k))^2-4\iota^2_i(t_k)}}{2}.
+\end{eqnarray}
+注意，\ref{chap2_Eq.23}）暗含$\xi_i(t_k)<\iota_i(t_k)<\sigma_i(t_k)$.
+
+
+\begin{remark}
+当$\iota_i(t_k)=0$，$\xi_i(t_k)=0$。在这种情况下，由迭代可行性可得假设输入是优化问题的最优解。
+\end{remark}
+
+\iffalse
+\begin{remark}
+\label{chap2_Remark 4}
+目前的文献已经研究了不同版本的相容性约束。在\cite{Dunbar(2004),Dunbar(2006)}中，相容性约束形式为$\|z_i(\cdot)-\hat{z}_i\|\leq\delta^2\kappa$，其中$\delta$为采样周期，$\kappa$为给定的常值。当系统收敛时，$\delta$需要满足一个时变收缩的上界。\cite{Wang(2014), Ding(2010)}设计了相容性约束需要满足的上界，而此上界与初始值有关，采样周期可以为任意的常值。在本章，相容性约束的上界取决于假设轨迹，并且可以取保系统的稳定性。
+\end{remark}
+\fi
+
+\subsection{终端成分的设计}
+文献\citep{MullerMA(2011)}的假设1提出了针对单个系统的终端元素需要满足的三个条件。下面，针对本章的控制目标，我们提出了相似的条件。
+\begin{definition}
+\label{chap2_Definition 1}
+终端集$\mathbb{Z}_{if}(t_k)\subseteq \mathbb{Z}_i$和终端控制器$\kappa_i(\cdot)$应满足：对于任意的$z_i(t|t_k)\in\mathbb{Z}_{if}(t_k)$和$\tau > t$，应用$u_i(\tau)=\kappa_i(z_i(\tau|t_k),z_r(\tau))$，
+\begin{eqnarray}
+&&z_i(\tau|t_k)\in \mathbb{Z}_{if}(t_k),  \label{chap2_Eq.9} \\
+&&\kappa_i(z_i(\tau|t_k,z_r(\tau))\in \mathbb{U}_i,  \label{chap2_Eq.10} \\
+&&\sum_{i=1}^{N_a}(\dot{L}_{if}(z_i(\tau|t_k,z_r(\tau))+L_i(\tau|t_k,z_i,z_{-i},z_r,u_i))\leq 0.  \label{chap2_Eq.11}
+\end{eqnarray}
+\end{definition}
+
+条件（\ref{chap2_Eq.9}）确保不变性；条件（\ref{chap2_Eq.10}）表示输入约束满足；条件
+（\ref{chap2_Eq.11}）确保局部收敛性。
+下面设计本章的终端集和相应的终端控制器。
+\begin{itemize}
+\item  终端成本为
+\begin{eqnarray}
+\label{chap2_Eq.12}
+L_{if}(z_i(\tau|t_k),z_r(\tau))=\rho_i\|z_i(\tau|t_k)-z_r(\tau)\|^2,
+\end{eqnarray}
+其中$\rho_i>0$为权重系数；
+
+\item  终端集为
+\begin{eqnarray}
+\label{chap2_Eq.13}
+&&\mathbb{Z}_{if}(t_k)=\{z_i(\tau|t_k)\mid\|z_i(\tau|t_k)-z_r(\tau)\|\leq \|z_i(t_k)-z_r(t_k)\|\nonumber\\
+&&\hspace{1.9cm} \text{且} x_i(\tau|t_k)-x_r(\tau)=-\mu_i(v_i(\tau|t_k)-v_r(\tau))\},
+\end{eqnarray}
+其中$\mu_i$为正常数，$\tau\geq t_k$；
+
+\item 终端控制器为
+\begin{eqnarray}
+&&\kappa_i(z_i(\tau|t_k),z_r(\tau))=-(f(x_i(\tau|t_k),v_i(\tau|t_k))\nonumber\\
+&&\hspace{3.6cm}-f(x_r(\tau),v_r(\tau)))-k_i(v_i(\tau|t_k)-v_r(\tau)), \label{chap2_Eq.14}
+\end{eqnarray}
+其中$k_i$为正常数。
+\end{itemize}
+
+考虑以上的终端元素，给出以下假设来确保定义\ref{chap2_Definition 1}中的条件满足。
+
+\begin{assumption}
+\label{chap2_Assumption 1}
+方程（\ref{chap2_Eq.1}）和（\ref{chap2_Eq.2}）中的非线性函数$f(\cdot)$满足局部Lipschitz条件，即
+\begin{eqnarray}
+\label{chap2_Eq.15}
+\|f(t,x,v)-f(t,y,z)\|\leq L_1\|x-y\|+L_2\|v-z\|.
+\end{eqnarray}
+\end{assumption}
+
+\begin{assumption}
+\label{chap2_Assumption 2}
+对于任意的$z_i(\tau)\in\mathbb{Z}_{if}(t_k)$，终端控制器（\ref{chap2_Eq.14}）满足 $\kappa_i(z_i(\tau),z_r(\tau))\in\mathbb{U}_i$。
+\end{assumption}
+
+\begin{remark}
+\label{chap2_Remark 1}
+本章引入这个假设是因为我们不清楚$\mathbb{U}_i$的确切形式。类似的假设可以参见文献
+\citep{MayneDQBOOK(2009)}。如果集合$\mathbb{U}_i=\{u\mid u_{min}\leq u \leq u_{max}\}$，那么可以离线选择合适的反馈增益$k_i$使得假设\ref{chap2_Assumption 2}满足。
+\end{remark}
+
+\begin{theorem}
+\label{chap2_theorem 1}
+给定参数$a_{ij}$、$\alpha_i$、$\beta_i$和$\lambda_i$，在假设\ref{chap2_Assumption 1}和假设
+\ref{chap2_Assumption 2}下，如果$\Lambda_{i1}+\Lambda_{i2}\leq 0$且$\mu_ik_i=1$，其中
+\begin{eqnarray}
+&&\Lambda_{i1}=\rho_i-2\rho_ik_i+\gamma_ik_i^2+\gamma_ik_iL_1+2\gamma_ik_iL_2
++\gamma_iL_2^2\nonumber\\
+&&\hspace{1cm}+\gamma_iL_1L_2+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}+\beta_i,
+\label{chap2_Eq.16}\\
+&&\Lambda_{i2}=\mu_i^2(\rho_i+\gamma_ik_iL_1+\gamma_iL_1^2+\gamma_iL_1L_2+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}+\beta_i),\label{chap2_Eq.17}
+\end{eqnarray}
+那么定义\ref{chap2_Definition 1}中的所有条件都能满足。
+\end{theorem}
+
+\begin{proof}
+对于任意$z_i(t)\in \mathbb{Z}_{if}(t_k)$，$t\geq t_k$且$\tau>t$，利用$\kappa_i(\cdot)$可得
+\begin{eqnarray}
+\label{chap2_Eq.18}
+&&\hspace{0.5cm}\dot{x}_i(\tau)-\dot{x}_r(\tau)+\mu_i(\dot{v}_i(\tau)-\dot{v}_r(\tau)) \nonumber\\
+&&=(v_i(\tau)-v_r(\tau))+\mu_i(f(\tau,x_i,v_i)+u_i(t)-f(\tau,x_r,v_r))  \nonumber\\
+&&=(v_i(\tau)-v_r(\tau))-\mu_ik_i(v_i(\tau)-v_r(\tau))  \nonumber\\
+&&=0.
+\end{eqnarray}
+因此，对于$\tau=t^+=\lim_{\triangle t\rightarrow 0}(t+\triangle t)$，条件$x_i(t)-x_r(t)=-\mu_i(v_i(\tau|t_k)-v_r(\tau))$满足。
+另外，从假设\ref{chap2_Assumption 2}可得（\ref{chap2_Eq.10}）满足。
+
+下面，我们将证明条件（\ref{chap2_Eq.11}）成立。 利用不等式$\|z_i-z_j\|^2\leq2\|z_i-z_r\|^2+2\|z_j-z_r\|^2$，如果
+\begin{eqnarray}
+\label{chap2_Eq.19}
+\sum_{i=1}^{N_a}(\dot{L}_{if}+2\alpha_i\sum_{j\in \mathcal{N}_i} a_{ij}(\|z_i-z_r\|^2+\|z_j-z_r\|^2)+\beta_i\|z_i-z_r\|^2+\gamma_i\|u_i\|^2)\leq 0,
+\end{eqnarray}
+那么条件（\ref{chap2_Eq.11}）一定满足。
+
+对于任意$i\in \mathbb{N}_a$，
+\begin{eqnarray}
+\label{chap2_Eq.20}
+&&\hspace{0.5cm}\dot{L}_{if}+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\|z_i-z_r\|^2)+2\sum_{j\in\mathcal{N}_i}\alpha_ja_{ji}(\|z_i-z_r\|^2)+\beta_i\|z_i-z_r\|^2+\gamma_i\|u_i\|^2 \nonumber\\
+&&=\dot{L}_{if}+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\|z_i-z_r\|^2)+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}(\|z_i-z_r\|^2)+\beta_i\|z_i-z_r\|^2+\gamma_i\|u_i\|^2 \nonumber\\
+&&=2\rho_i(x_i-x_r)^T(v_i-v_r)+2\rho_i(v_r-v_i)^T(f(x_i,v_i)-f(x_r,v_r)+u_i) \nonumber\\
+&&\hspace{0.5cm}+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\|z_i-z_r\|^2)+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}(\|z_i-z_r\|^2)+\beta_i\|z_i-z_r\|^2+\gamma_i\|u_i\|^2 \nonumber\\
+&&\leq\rho_i\|x_i-x_r\|^2+\rho_i\|v_i-v_r\|^2-2\rho_ik_i\|v_i-v_r\|^2+\gamma_i\|k_i(v_i-v_r)+f(x_i,v_i)
+\nonumber\\
+&&\hspace{0.5cm}-f(x_r,v_r)\|^2 +2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\|z_i-z_r\|^2)+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}(\|z_i-z_r\|^2)+\beta_i\|z_i-z_r\|^2 \nonumber\\
+&&\leq\rho_i\|x_i-x_r\|^2+\rho_i\|v_i-v_r\|^2-2\rho_ik_i\|v_i-v_r\|^2+\gamma_ik_i^2\|v_i-v_r\|^2\nonumber\\
+&&\hspace{0.5cm}+2\gamma_ik_iL_1\|x_i-x_r\|\|v_i-v_r\|+2\gamma_ik_iL_2\|v_i-v_r\|^2+\gamma_iL_1^2\|x_i-x_r\|^2\nonumber\\
+&&\hspace{0.5cm}+\gamma_iL_2^2\|v_i-v_r\|^2+2\gamma_iL_1L_2\|x_i-x_r\|\|v_i-v_r\|+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\|z_i-z_r\|^2)\nonumber\\
+&&\hspace{0.5cm}+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}(\|z_i-z_r\|^2)+\beta_i\|z_i-z_r\|^2
+\nonumber\\
+&&\leq (\rho_i-2\rho_ik_i+\gamma_ik_i^2+\gamma_ik_iL_1+2\gamma_ik_iL_2+\gamma_iL_2^2+\gamma_iL_1L_2\nonumber\\
+&&\hspace{0.5cm}+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}+\beta_i)\|v_i-v_r\|^2+(\rho_i+\gamma_ik_iL_1 \nonumber \\
+&&\hspace{0.5cm}+\gamma_iL_1^2+\gamma_iL_1L_2+2\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}+2\sum_{j\in\mathcal{N}_i}\alpha_j a_{ij}+\beta_i)\|x_i-x_r\|^2\nonumber \\
+&&=(\Lambda_{i1}+\Lambda_{i2})\|v_i-v_r\|^2 \leq 0.
+\end{eqnarray}
+因此，不等式
+\begin{eqnarray}
+\label{chap2_Eq.21}
+\dot{L}_{if}\leq -\beta_i\|z_i-z_r\|^2
+\end{eqnarray}
+成立。它意味着在终端集内，应用终端控制器$\kappa_i(\cdot)$，$\|z_i-z_r\|^2$将指数递减为$0$，即对于任意$z_i(t)\in \mathbb{Z}_{if}(t_k)$， $t\geq t_k$且$\tau>t$，$\|z_i(\tau)-z_r(\tau)\|^2<\|z_i(t)-z_r(t)\|^2\leq\|z_i(t_k)-z_r(t_k)\|^2$。 根据
+（\ref{chap2_Eq.18}）和（\ref{chap2_Eq.21}）可得，条件（\ref{chap2_Eq.9}）满足。
+\end{proof}
+
+\begin{remark}
+\label{chap2_Remark 1}
+本章的终端集和终端控制器相对严格。然而，和\citep{ChenJ(2009),GuD(2006)}中的结果相比，本章设计的终端集可以保证不变性，从而有助于确保迭代可行性。 除此之外，给定上述的终端元素，本章的优化问题是一个凸优化问题，能够有效求解。
+\end{remark}
+
+
+\subsection{分布式实现算法}
+在上一节，我们提出了\textbf{问题2}与给出了智能体的假设控制输入（\ref{chap2_Eq.5}）和假设轨迹
+（\ref{chap2_Eq.6}）。下面，我们将详细地描述同步分布式实现算法。
+
+\textbf{算法 2}
+
+\textbf{离线阶段}：对于每个智能体$i$，给定权重参数$\alpha_i$、$\beta_i$、$\gamma_i$和$\varphi_i$；选择合适的参数$\rho_i$、$k_i$和$\mu_i$。
+
+\textbf{在线阶段}：在初始时刻$t_0$，给定初始最优解$u_i^*(\tau|t_0)$和初始最优轨迹$z_i^*(\tau|t_0)$，$\tau\in[t_0,t_0+T]$。
+
+(i) 在时间区间$[t_k,t_{k+1})$，$k\geq 0$，每个智能体$i$
+\begin{itemize}
+\item 实施实际轨迹$z_i(t)=z_i^*(t|t_k)$，$t\in[t_k,t_{k+1})$；
+
+\item 计算假设控制输入$\hat{u}_i(\tau|t_{k+1})$和假设轨迹$\hat{z}_i(\tau|t_{k+1})$， $\tau\in[t_{k+1},t_{k+1}+T]$；
+
+\item 将$\hat{z}_i(\cdot)$传递给它的邻居，接收来自邻居$j\in\mathcal{N}_i$的$\hat{z}_j(\cdot)$；
+
+\item 计算$\sigma_i(t_k)$，$\iota_i(t_k)$；
+
+\item 将$\sigma_i(t_k)$传递给它的邻居，接收来自邻居$j\in\mathcal{N}_i$的$\sigma_i(t_k)$；
+
+\item 根据（\ref{chap2_Eq.23}）计算$\xi_i(t_k)$。
+\end{itemize}
+
+(ii) 在每个采样时刻$t_k$，$k> 0$，每个智能体$i$
+\begin{itemize}
+\item 采样当前状态$z_i(t_k)$；
+
+\item 求解\textbf{问题2}，得到最优控制输入$u_i^*(\tau|t_k)$和最优轨迹$z_i^*(\tau|t_k)$， $\tau\in[t_k,t_k+T]$。
+\end{itemize}
+
+(iii) 返回(i).
+
+文献\citep{DunbarWBAuto(2006),DunbarWBPHD(2004)}给出了一种得到初始最优解的方法。为了避免集中式MPC 复杂的计算，这些文献设定初始假设轨迹$\hat{z}_i(\tau|t_0)$为$z_i(t_0)$，$\tau\in[t_0,t_0+T]$，然后求解优化问题可得初始最优解。另外，本章假设求解最优化问题的时间可以忽略不计。
+
+\section{主要结果}
+利用上节的分布式算法，闭环系统具有下面的迭代可行性和闭环稳定性。
+\begin{theorem}
+\label{chap2_Feasibility and Stability}
+在每个采样时刻$t_k$，每个动力学如（\ref{chap2_Eq.1}）的智能体求解\textbf{问题2}。对于每个智能体，如果在初始时刻$t_0$存在一个初始可行解，那么\textbf{问题2}在任意时刻$t_k$，$k>0$均是可行的。进一步地，整个多智能体系统是渐进稳定的，即当$t\rightarrow \infty$，对于所有的$i,j=1,2,\ldots,N_a$，$\|z_i-z_j\|\rightarrow 0$且$\|z_i-z_r\|\rightarrow 0$。
+\end{theorem}
+\begin{proof}
+首先分析可行性。假设在$t_k$时刻，对智能体$i$，\textbf{问题2}是可行的。它的最优控制输入和最优轨迹分别为$u_i^*(\tau|t_k)$和$z_i^*(\tau|t_k)$，$\tau\in[t_k,t_k+T]$。定义$\tilde{u}_i(\tau|t_{k+1})$为可行控制输入，$\tilde{z}_i(\tau|t_{k+1})$为相应的轨迹，$\tau\in[t_{k+1},t_{k+1}+T]$。
+
+令$\tilde{u}_i(\tau|t_{k+1})=\hat{u}_i(\tau|t_{k+1})$，$\tau\in[t_{k+1},t_{k+1}+T]$。从终端集和终端控制器的定义可得，带入$\tilde{u}_i(\cdot)$，\textbf{问题2}所有的约束都满足，即 $\hat{u}_i(\tau|t_{k+1})$，$\tau\in[t_{k+1},t_{k+1}+T]$是$t_{k+1}$时刻的一个可行解。因此，初始可行意味着后续的所有优化问题均是可行的。
+
+下面，我们证明闭环系统的稳定性。对于多智能体系统，定义李亚普诺夫函数为单个系统最优成本的和，即
+\begin{eqnarray}
+\label{chap2_Eq.25}
+J_{\sum}^*(t_k)=\sum_{i=1}^{N_a}J_i^*(t_k,z_i^*,\hat{z}_{-i},u_i^*).
+\end{eqnarray}
+
+令$\tilde{u}_i(\tau|t_{k+1})=\hat{u}_i(\tau|t_{k+1})$为$t_{k+1}$时刻的可行解，$\tau\in[t_{k+1},t_{k+1}+T]$。因此，
+\begin{eqnarray}
+\label{chap2_Eq.26}
+&&\hspace{0.5cm}J_{\sum}^*(t_{k+1})-J_{\sum}^*(t_k) \nonumber \\
+&&\leq\sum_{i=1}^{N_a}(J_i(t_{k+1},\tilde{z}_i,\tilde{z}_{-i},\tilde{u}_i)-J_i^*(t_k,z_i^*,\hat{z}_{-i},u_i^*))\nonumber\\
+&&\leq\sum_{i=1}^{N_a}(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\int_{t_{k+1}}^{t_{k}+T}(\|z_i^*(\tau|t_k)-z_j^*(\tau|t_k)\|^2-\|z_i^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|^2)d\tau\nonumber \\
+&&\hspace{0.5cm}-\int_{t_k}^{t_{k+1}}L_i(\tau|t_k,z_i^*,\hat{z}_j,z_r,u_i^*)d\tau+\int_{t_k+T}^{t_{k+1}+T}L_i(\tau|t_k,z_i^{\kappa},z_j^{\kappa},z_r,\kappa_i)d\tau \nonumber \\
+&&\hspace{0.5cm}+L_{if}(z_i^{\kappa}(t_{k+1}+T|t_k),z_r(t_{k+1}+T))-L_{if}(z_i^*(t_k+T|t_k),z_r(t_k+T))).
+\end{eqnarray}
+
+由条件（\ref{chap2_Eq.11}）可得
+\begin{eqnarray}
+\label{chap2_Eq.27}
+&&\hspace{0.5cm}J_{\sum}^*(t_{k+1})-J_{\sum}^*(t_k) \nonumber \\
+&&\leq\sum_{i=1}^{N_a}(J_i(t_{k+1},\tilde{z}_i,\tilde{z}_{-i},\tilde{u}_i)-J_i^*(t_k,z_i^*,\hat{z}_{-i},u_i^*))\nonumber \\
+&&\leq\sum_{i=1}^{N_a}(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\int_{t_{k+1}}^{t_{k}+T}(\|z_i^*(\tau|t_k)-z_j^*(\tau|t_k)\|^2-\|z_i^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|^2)d\tau\nonumber \\
+&&\hspace{0.5cm}-\int_{t_k}^{t_{k+1}}L_i(\tau|t_k,z_i^*,\hat{z}_j,z_r,u_i^*)d\tau.
+\end{eqnarray}
+
+根据$\|z_i(\tau|t_k)-\hat{z}_i(\tau|t_k)\|\leq\xi_i(|t_k)<\sigma_i(t_k)$可得
+\begin{eqnarray}
+\label{chap2_Eq.28}
+&&\hspace{0.5cm}\sum_{i=1}^{N_a}(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\int_{t_{k+1}}^{t_{k}+T}(\|z_i^*(\tau|t_k)-z_j^*(\tau|t_k)\|^2-\|z_i^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|^2)d\tau) \nonumber \\
+&&\leq\sum_{i=1}^{N_a}(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\int_{t_{k+1}}^{t_{k}+T}(2\|z_i^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|\|z_j^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|
+\nonumber \\
+&&\hspace{0.5cm}+\|z_j^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|^2)d\tau) \nonumber \\
+&&\leq\sum_{i=1}^{N_a}(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\int_{t_{k+1}}^{t_{k}+T}(2(\|z_i^*(\tau|t_k)-\hat{z}_i(\tau|t_k)\|+\|\hat{z}_i(\tau|t_k)-\hat{z}_j(\tau|t_k)\|)\nonumber \\&&\hspace{0.5cm}\times\|z_j^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|
++\|z_j^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|^2)d\tau)\nonumber \\
+&&\leq\sum_{i=1}^{N_a}(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\int_{t_{k+1}}^{t_{k}+T}(2(\xi_i(t_k)+\sigma_i(t_k))\times\xi_j(t_k)+\xi_j^2(t_k))d\tau)\nonumber \\
+&&\leq\sum_{i=1}^{N_a}(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\int_{t_{k+1}}^{t_{k}+T}(2\sigma_i(t_k)\times\xi_j(t_k)+\sigma_j(t_k)\times\xi_j(t_k))d\tau)\nonumber \\
+%&&\leq\sum_{i=1}^N(\sum_{j\in\mathcal{N}_i}\alpha_ja_{ij}\int_{t_{k+1}}^{t_{k}+T}(2\sigma_j(t_k)\times\xi_i(t_k)+\sigma_i(t_k)\times\xi_i(t_k))d\tau)\nonumber \\
+&&=\sum_{i=1}^{N_a}(\sum_{j\in\mathcal{N}_i}\alpha_ja_{ij}(T-\delta)(2\sigma_j(t_k)\times\xi_i(t_k)+\sigma_i(t_k)\times\xi_i(t_k))).
+%&&\leq\sum_{i=1}^N\varphi_i(\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\|z_i(t_k)-z_j(t_k)\|^2+\beta_i\|z_i(t_k)-z_r(t_k)\|^2)
+\end{eqnarray}
+
+另外，由$\xi_i(t_k)<\iota_i(t_k)$可得
+\begin{eqnarray}
+&&\hspace{0.5cm}\int_{t_k}^{t_{k+1}}L_i(\tau|t_k,z_i^*,\hat{z}_j,z_r,u_i^*)d\tau \nonumber \\
+&&=\int_{t_k}^{t_{k+1}}\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\|z_i^*(\tau|t_k)-\hat{z}_j(\tau|t_k)\|^2+\beta_i\|z_i^*(\tau|t_k)-z_r(\tau)\|^2+ \gamma_i\|u_i^*(\tau|t_k)\|^2d\tau \nonumber \\
+&&\geq \int_{t_k}^{t_{k+1}}\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}\|z_i^*(\tau|t_k)-\hat{z}_i(\tau|t_k)+\hat{z}_i(\tau|t_k)-\hat{z}_j(\tau|t_k)\|^2d\tau \nonumber
+\end{eqnarray}
+\begin{eqnarray}
+&&\hspace{-2cm}\geq\int_{t_k}^{t_{k+1}}\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\|\hat{z}_i(\tau|t_k)-\hat{z}_j(\tau|t_k)\|-\|z_i^*(\tau|t_k)-\hat{z}_i(\tau|t_k)\|)^2d\tau  \nonumber \\
+&&\hspace{-2cm}\geq\int_{t_k}^{t_{k+1}}\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\iota_i(t_k)-\xi_i(t_k))^2d\tau\nonumber \\
+&&\hspace{-2cm}=\delta\alpha_i\sum_{j\in\mathcal{N}_i}a_{ij}(\iota_i(t_k)-\xi_i(t_k))^2.
+\end{eqnarray}
+
+根据相容性约束的上界（\ref{chap2_Eq.23}），我们可以得出对于所有的$z_i\neq z_j$，
+\begin{eqnarray}
+\label{chap2_Eq.29}
+J_{\sum}^*(t_{k+1})-J_{\sum}^*(t_k)<0.
+\end{eqnarray}
+因此，整个系统是渐进稳定的。
+\end{proof}
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/chap3_state}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{所有智能体的状态}
+ \label{chap2_Fig.1}
+ \vspace{-0.4cm}
+\end{figure}
+
+
+\section{仿真结果和分析}
+本节考虑文献\citep{LiZJ(2006)}中2-自由度的机械臂模型作为仿真模型。为了简化，此仿真忽略摩擦力的影响。 模型的形式如（\ref{chap2_Eq.1}）所示，其中$f=[-4.646\sin{x_{i1}}\ 0]^T$。仿真利用工具箱ICLOCS \cite{FalugiP(2010)}和IPOPT\cite{WachterA(2010)}在Matlab平台上进行。
+
+
+关联矩阵$\mathcal{A}$取值为
+\begin{eqnarray*}
+\mathcal{A}=
+\left[
+  \begin{array}{ccccc}
+    1 & 1 & 1 & 0 & 1 \\
+    1 & 1 & 0 & 1 & 0 \\
+    1 & 0 & 1 & 1 & 0 \\
+    0 & 1 & 1 & 1 & 0 \\
+    1 & 0 & 0 & 0 & 1 \\
+  \end{array}
+\right].
+\end{eqnarray*}
+另外，$L_1=4.646$，$L_2=0$。根据定理\ref{chap2_theorem 1}, 其他参数选取如下：
+\begin{eqnarray*}
+&T=3, \quad \delta=0.5, \quad  \alpha_i=\beta_i=0.1, \quad \gamma_i=0.01,\quad \rho_i=5, \quad \mu_i=0.6,\quad k_i=1/0.6=1.67 \\
+&\mathbb{U}_i=\{u_i|-2.5\leq u_{i1},u_{i2}\leq 2.5\}
+\end{eqnarray*}
+这些参数能保证$\Lambda_{i1}+\Lambda_{i2}<0$。
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/chap3_input}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{所有智能体的控制输入}
+ \label{chap2_Fig.2}
+ \vspace{-0.4cm}
+\end{figure}
+
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.65\textwidth]{figures/chap3_cost}\\    % e.g.,[scale=0.75], [width=0.75\textwidth ]
+ \caption{整个系统的成本}
+ \label{chap2_Fig.3}
+ \vspace{-0.4cm}
+\end{figure}
+
+每个智能体的初始状态为：
+\begin{eqnarray*}
+z_1(0)&=&
+\left[
+  \begin{array}{cccc}
+-5& -8& -3& -6 \\
+  \end{array}
+\right]^T,\\
+z_2(0)&=&
+\left[
+  \begin{array}{cccc}
+-8& -5& -5& 3 \\
+  \end{array}
+\right]^T, \\
+z_3(0)&=&
+\left[
+  \begin{array}{cccc}
+5& 5& -3& 4 \\
+  \end{array}
+\right]^T,\\
+z_4(0)&=&
+\left[
+  \begin{array}{cccc}
+-3& 6& 1& -6 \\
+  \end{array}
+\right]^T, \\
+z_5(0)&=&
+\left[
+  \begin{array}{cccc}
+6& 3& -1.5& -2.5 \\
+  \end{array}
+\right]^T,
+\end{eqnarray*}
+参考智能体的初始状态为$z_r(0)=
+\left[\begin{array}{cccc}
+-1& -0.5& 1& -1 \\
+  \end{array}\right]^T $。
+
+
+仿真结果如图\ref{chap2_Fig.1}-图\ref{chap2_Fig.3}。图\ref{chap2_Fig.1}表示每个智能体的状态均收敛到参考轨迹，从而实现了多智能体系统的一致。图\ref{chap2_Fig.2}给出了每个智能体的控制输入轨迹，由图可知，控制输入满足输入约束。在图\ref{chap2_Fig.3}中，我们可以看出整个系统的成本渐进收敛到$0$，因此整个系统是渐进稳定的。总的来说，仿真结果证明了所提出算法的有效性。
+
+
+
+
+
+
+
+\section{本章小结}
+
+本章主要研究了多个二阶非线性系统的分布式模型预测一致控制问题，智能体系统之间存在成本耦合，所有智能体共享一个参考轨迹。利用同步更新策略，在上一章的基础上，提出了新的相容性约束上界；利用参考轨迹，设计了每个智能体的终端成分，并给出了其需要满足的条件；给出了分布式优化算法；分析了优化问题的迭代可行性和整个系统的闭环收敛性；最后通过仿真实验验证了算法的有效性。
+
+
+
+
+
+
+
+
+

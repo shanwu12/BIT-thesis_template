@@ -1,0 +1,51 @@
+% \documentclass[twoside,12pt,CJK]{cctbook}
+\documentclass[12pt,cs4size,fancyhdr,hyperref,fntef]{ctexbook}
+\input setup.tex
+
+%  e\overrightarrow{}
+%\allowdisplaybreaks
+
+\begin{document}
+
+\frontmatter
+
+% \def\thepage{\roman{page}}
+%\input chapter/chap-cover
+
+%\input chap/chap-copyright
+%\input chapter/chap-shengming
+
+\pagestyle{plain}
+\input chapter/chap-abstract
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                Ä¿Â¼
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \setcounter{chapter}{0}
+{\baselineskip=20pt
+\tableofcontents
+}
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                ÕýÎÄ
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mainmatter
+
+ \setcounter{page}{1}
+ \setcounter{chapter}{0}
+ \def\thepage{\arabic{page}}
+\include {chapter/chapter1}
+%\include {chapter/chapter2}
+\include {chapter/chapter2}
+\include {chapter/chapter3}
+\include {chapter/chapter4}
+\include {chapter/chapter5}
+\include {chapter/chap-bibs}
+\include {chapter/chap-pubs}
+%\include {chapter/chap-ack}
+
+
+\end{document}

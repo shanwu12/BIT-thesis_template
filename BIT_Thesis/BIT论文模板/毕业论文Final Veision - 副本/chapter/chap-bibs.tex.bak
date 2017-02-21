@@ -1,0 +1,365 @@
+
+% \bibliographystyle{plain}
+\bibliographystyle{GBT7714-2005NLang_Upp}
+% \bibliography{chap/references}
+%& This .bbl file has been processed by fixbbl!
+%& This .bbl file has been processed by fixbbl!
+\begin{thebibliography}{148}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+\providecommand{\doi}[1]{doi: #1}\else
+\providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem{SiljakDD(1978)}
+Siljak D D. Large-scale dynamic systems: stability and structure~[M]. North Holland, 1978.
+
+\bibitem{FilipFG(2008)}
+Filip F G. Decision support and control for large-scale complex systems~[J]. Annual Reviews in Control, 2008, 32(1): 61-70.
+
+\bibitem{SiljakDD(2011)}
+Siljak D D. Decentralized control of complex systems~[M]. Courier Corporation, 2011.
+
+
+
+\bibitem{WangYue(1998)}
+王越超, 谈大龙. 协作机器人学的研究现状与发展~[J]. 机器人, 1998, 20(1): 69-75.
+
+\bibitem{LiuJin(2001)}
+刘金琨, 尔联洁. 多智能体技术应用综述~[J]. 控制与决策, 2001, 16(2): 133-140.
+
+\bibitem{XiaYQ(2015)}
+Xia Y Q, Zhou N, Lu K F, et al. Attitude control of multiple rigid bodies with uncertainties and disturbances~[J]. IEEE/CAA Journal of Automatica Sinica, 2015, 2(1): 2-10.
+
+\bibitem{ParkerLE(1993)}
+Parker L E. Designing control laws for cooperative agent teams~[C]. Proceedings of IEEE International Conference on Robotics and Automation, 1993: 582-587.
+
+\bibitem{KitanoH(1997)}
+Kitano H, Asada M, Kuniyoshi Y, et al. RoboCup: A challenge problem for AI~[J]. AI magazine, 1997, 18(1): 73.
+
+\bibitem{Lavretsky(2002)}
+Lavretsky E. F/A-18 Autonomous Formation Flight Control Systems Design~[C]. AIAA Conference on Guidance, Navigation, and Control, 2002, AIAA paper 4757.
+
+
+\bibitem{Chandler(2001)}
+Chandler P R, Pachter M, Rasmussen S. UAV cooperative control~[C]. Proceedings of American Control Conference, 2001, 1: 50-55.
+
+\bibitem{SinghH(2001)}
+Singh H, Bellingham J G, Hover F, et al. Docking for an autonomous ocean sampling network~[J]. IEEE Journal of Oceanic Engineering, 2001, 26(4): 498-514.
+
+
+\bibitem{ChengXiang(2005)}
+承向军, 杜鹏, 杨肇夏. 基于多智能体的分布式交通信号协调控制方法~[J]. 系统工程理论与实践, 2005, 8(8): 130-135.
+
+\bibitem{GoodwinGC(2006)}
+Goodwin G C, Seron M M, De Don\'{a} J A. Constrained control and estimation: an optimisation approach~[M]. Springer, 2006.
+
+\bibitem{NegenbornRR(2006)}
+Negenborn R R, De Schutter B, Hellendoorn J. Multi-agent model predictive control for transportation networks: Serial versus parallel schemes~[J]. Engineering Applications of Artificial Intelligence, 2008, 21(3): 353-366.
+
+
+\bibitem{Propoi(1963)}
+Propoi A I. Use of linear programming methods for synthesizing sampled-data automatic systems~[J]. Automation and Remote Control, 1963, 24(7): 837-844.
+
+\bibitem{Richalet(1978)}
+Richalet J, Rault A, Testud J L, et al. Model predictive heuristic control: applications to industrial processes~[J]. Automatica, 1978, 14(5): 413-428.
+
+\bibitem{GarciaCE(1989)}
+Garcia C E, Prett D M, Morari M. Model predictive control: theory and practice-a
+survey~[J]. Automatica, 1989, 25(3): 335-348.
+
+\bibitem{Cutler(1980)}
+Cutler C R, Ramaker B L. Dynamic matrix control - A computer control algorithm~[C]. Proceedings of the 1980 Joint Automatic Control Conference, 1980, (17):
+72.
+
+
+\bibitem{WangYY(2002)}
+Wang Y Y. Robust model predictive control~[D]. Madison: University of Wisconsin-Madison, USA, 2002.
+
+\bibitem{GruneL(2011)}
+Gr\"{u}ne L, Pannek J. Nonlinear model predictive control~[M]. Springer, 2011.
+
+\bibitem{BorrelliF(2013)}
+Borrelli F, Bemporad A, Morari M. Predictive Control for linear and hybrid systems~[M].  Cambridge University Press, 2013.
+
+\bibitem{OldewurtelF(2010)}
+Oldewurtel F, Parisio A, Jones C N, et al. Energy efficient building climate control using stochastic model predictive control and weather predictions~[C]. Proceedings of American control conference, 2010: 5100-5105.
+
+
+\bibitem{WahabNA(2011)}
+Wahab N A, Katebi R, Balderud J, et al. Data-driven adaptive model-based predictive control with application in wastewater systems~[J]. IET Control Theory \& Applications, 2011, 5(6): 803-812.
+
+\bibitem{McKinleyTL(2012)}
+McKinley T L, Alleyne A G. Adaptive model predictive control of an SCR catalytic converter system for automotive applications~[J]. IEEE Transactions on Control Systems Technology, 2012, 20(6): 1533-1547.
+
+\bibitem{AkpanVA(2011)}
+Akpan V A, Hassapis G D. Nonlinear model identification and adaptive model predictive control using neural networks~[J]. ISA transactions, 2011, 50(2): 177-194.
+
+\bibitem{CamachoEF(2015)}
+Camacho E F, Bordons C. Distributed model predictive control~[J]. Optimal Control Applications and Methods, 2015, 36(3): 269-271.
+
+\bibitem{GiovaniniL(2011)}
+Giovanini L. Game approach to distributed model predictive control~[J]. IET Control Theory \& Applications, 2011, 5(15): 1729-1739.
+
+\bibitem{LiHAuto(2014)}
+Li H P, Shi Y. Distributed receding horizon control of large-scale nonlinear systems: handling communication delays and disturbances~[J]. Automatica, 2014, 50(4): 1264-1271.
+
+\bibitem{WangC(2010)}
+Wang C, Ong C J. Distributed model predictive control of dynamically decoupled systems with coupled cost~[J]. Automatica, 2010, 46(12): 2053-2058.
+
+\bibitem{DingBC(2010)}
+Ding B C, Xie L H, Cai W J. Distributed model predictive control for constrained linear systems~[J]. International Journal of Robust and Nonlinear Control, 2010, 20(11): 1285-1298.
+
+\bibitem{MaJR(2012)}
+Ma J R, Qin J, Salsbury T, et al. Demand reduction in building energy systems based on economic model predictive control~[J]. Chemical Engineering Science, 2012, 67(1): 92-100.
+
+\bibitem{AngeliD(2012)}
+Angeli D, Amrit R, Rawlings J B. On average performance and stability of economic model predictive control~[J]. IEEE Transactions on Automatic Control, 2012, 57(7): 1615-1626.
+
+\bibitem{AngeliD(2015)}
+Angeli D. Economic Model Predictive Control~[J]. Encyclopedia of Systems and Control, 2015: 337-343.
+
+
+\bibitem{Morari(1999)}
+Morari M, Lee J H. Model predictive control: past, present and future~[J]. Computers \& Chemical Engineering, 1999, 23(4): 667-682.
+
+\bibitem{DingBaocangBook(2008)}
+丁宝苍. 预测控制的理论与方法~[M]. 北京: 机械工业出版社, 2008.
+
+\bibitem{YangPHD(2013)}
+杨罡. 电力系统模型预测控制技术研究~[D]. 北京: 北京交通大学, 2013.
+
+
+\bibitem{MayneDQ(2000)}
+Mayne D Q, Rawlings J B, Rao C V, et al. Constrained model predictive control:
+Stability and optimality~[J]. Automatica, 2000, 36(6): 789-814.
+
+
+\bibitem{CallierFM(2012)}
+Callier F M, Desoer C A. Linear system theory~[M]. Springer, 2012.
+
+\bibitem{MayneDQBOOK(2009)}
+Mayne D Q, Rawlings J B. Model predictive control: theory and design~[M]. Madison,
+WI: Nob Hill Publishing, LCC, 2009.
+
+\bibitem{ChenHAuto(1998)}
+Chen H, Allg\"{o}wer F. A quasi-infinite horizon nonlinear model predictive control
+scheme with guaranteed stability~[J]. Automatica, 1998, 34(10): 1205-1217.
+
+
+\bibitem{BemporadA(1999)}
+Bemporad A, Morari M. Robust model predictive control: A survey. In Robustness
+in identification and control[M]. London: Springer, 1999: 207-226.
+
+\bibitem{JalaliAA(2006)}
+Jalali A A, Nadimi V. A survey on robust model predictive control from 1999-2006[C].
+Proceedings of the 2006 International Conference on Computational Intelligence for
+Modelling Control and Automation, 2006: 207-212.
+
+
+\bibitem{MayneDQ(2005)}
+Mayne D Q, Seron M M, Rakovi\'{c} S V. Robust model predictive control of constrained
+linear systems with bounded disturbances~[J]. Automatica, 2005, 41(2): 219-224.
+
+\bibitem{KothareMV(1996)}
+Kothare M V, Balakrishnan V, Morari M. Robust constrained model predictive control
+using linear matrix inequalities~[J]. Automatica, 1996, 32(10): 1361-1379.
+
+\bibitem{KanevS(2006)}
+Kanev S, Verhaegen M. Robustly asymptotically stable finite-horizon MPC~[J]. Automatica,
+2006, 42(12): 2189-2194.
+
+\bibitem{DingBC(2008)}
+Ding B C, Xi Y G, Cychowski M T, et al. A synthesis approach for output feedback
+robust constrained model predictive control~[J]. Automatica, 2008, 44(1): 258-264.
+
+
+\bibitem{LiSQ(2010)}
+李善强. 时滞系统的鲁棒模型预测控制~[D]. 哈尔滨: 哈尔滨理工大学, 2010.
+
+\bibitem{MayneDQ(2009)}
+Mayne D Q, Rakovi\'{c} S V, Findeisen R, et al. Robust output feedback model predictive control of constrained linear systems: time varying case~[J]. Automatica, 2009, 45(9): 2082-2087.
+
+\bibitem{VanHessemDH(2002)}
+Van Hessem D H, Bosgra O H. A conic reformulation of model predictive control
+including bounded and stochastic disturbances under state and input constraints~[C]. Proceedings ofthe 41st IEEE Conference on Decision and Control, USA, 2002: 4643-4648.
+
+\bibitem{KouvaritakisB(2010)}
+Kouvaritakis B, Cannon M, Rakovi\'{c} S V, et al. Explicit use of probabilistic distributions in linear predictive control~[J]. Automatica, 2010, 46(10): 1719-1724.
+
+\bibitem{CannonM(2012)}
+Cannon M, Cheng Q F, Kouvaritakis B, et al. Stochastic tube MPC with state estimation~[J]. Automatica, 2012, 48(3): 536-541.
+
+\bibitem{ZeilingerMN(2014)}
+Zeilinger M N, Morari M, Jones C N. Soft constrained model predictive control with robust stability guarantees~[J]. IEEE Transactions on Automatic Control, 2014, 59(5): 1190-1202.
+
+\bibitem{CannonMTAC(2011)}
+Cannon M, Kouvaritakis B, Rakovi\'{c} S V, et al. Stochastic tubes in model predictive control with probabilistic constraints~[J]. IEEE Transactions on Automatic Control, 2011, 56(1): 194-200.
+
+\bibitem{XiYG(2013)}
+Xi Y G, Li D W, Lin S. Model predictive control: status and challenges~[J]. Acta
+Automatica Sinica, 2013, 39(3): 222-236.
+
+\bibitem{RichardsA(2007)}
+Richards A, How J P. Robust distributed model predictive control~[J]. International Journal of Control, 2007, 80(9): pp.1517-1531.
+
+\bibitem{KuwataY(2007)}
+Kuwata Y, Richards A, Schouwenaars T, et al. Distributed robust receding horizon control for multi-vehicle guidance[J]. IEEE Transactions on Control Systems Technology, 2007, 15(4): 627-641.
+
+\bibitem{KeviczkyTAuto(2006)}
+Keviczky T, Borrelli F, Balas G J. Decentralized receding horizon control for large
+scale dynamically decoupled systems~[J]. Automatica, 2006, 42(12): 2105-2115.
+
+\bibitem{ScattoliniR(2009)}
+Scattolini R. Architectures for distributed and hierarchical model predictive control–a review~[J]. Journal of Process Control, 2009, 19(5): 723-731.
+
+\bibitem{ZeilingerMN(2011)}
+Zeilinger M N. Real-time model predictive control~[D]. Z\"{u}rich: Eidgen\"{o}ssische Technische Hochschule, 2011.
+
+\bibitem{CamponogaraE(2002)}
+Camponogara E, Jia D, Krogh B H, et al. Distributed model predictive control~[J].
+IEEE Control Systems Magazine, 2002, 22(1): 44-52.
+
+\bibitem{CuiH(2002)}
+Cui H, Jacobsen E W. Performance limitations in decentralized control~[J]. Journal of Process Control, 2002, 12(4): 485-494.
+
+\bibitem{VanAntwerpJG(2000)}
+Van Antwerp J G, Braatz R D. Model predictive control of large scale processes~[J]. Journal of Process Control, 2000, 10(1): 1-8.
+
+\bibitem{VaccariniM(2009)}
+Vaccarini M, Longhi S, Katebi M R. Unconstrained networked decentralized model predictive control~[J]. Journal of Process Control, 2009, 19(2): 328-339.
+
+\bibitem{RaimondoDM(2007)}
+Raimondo D M, Magni L, Scattoimi R. Decentralized MPC of nonlinear systems：An input-to-state stability approach~[J]. International Journal of Robust and Nonlinear Control, 2007, 17(17): 1651-1667.
+
+\bibitem{GomezM(1998)}
+Gomez M, Rodellar J, Vea F, et al. Decentralized predictive control of multi-reach canals~[C]. Proceedings of IEEE International Conference on Systems, Man, and Cybernetics, 1998, 4: 3885-3890.
+
+
+
+\bibitem{MagniL(2006)}
+Magni L, Scattofim R. Stabilizing decentrafized model predictive control of nonlinear systems~[J]. Automatica, 2006, 42(7): 1231-1236.
+
+
+
+\bibitem{AlessioA(2002)}
+Alessio A, Barcelli D, Bemporad A. Decentralized model predictive control of dynamically coupled linear systems~[J]. Journal of Process Control, 2011, 21(5): 705-714.
+
+\bibitem{HashimotoK(2015)}
+Hashimoto K, Adachi S, Dimarogonas D V. Distributed aperiodic model predictive control for multi-agent systems~[J]. IET Control Theory \& Applications, 2015, 9(1): 10-20.
+
+\bibitem{GaoYL(2015)}
+Gao Y L, Xia Y Q, Dai L. Cooperative distributed model predictive control of multiple coupled linear systems~[J]. IET Control Theory \& Applications, 2015, 9(17): 2561-2567.
+
+\bibitem{DaiL(2015)}
+Dai L, Xia Y Q, Gao Y L, et al. Cooperative distributed stochastic MPC of linear systems with state estimation and coupled probabilistic constraints~[J]. Automatica, 2015, 61: 89-96.
+
+\bibitem{MaestreJM(2014)}
+Maestre J M, Negenborn R R. Distributed model predictive control made
+easy~[M]. Springer, 2014.
+
+\bibitem{NegenbornRR(2014)}
+Negenborn R R, Maestre J M. Distributed model predictive control: An overview
+and roadmap of future research opportunities~[J]. IEEE Control Systems Magazine,
+2014, 34(4): 87-97.
+
+\bibitem{ConteC(2014)}
+Conte C. Stability and computations in cooperative distributed model predictive control~[D]. Z\"{u}rich: Eidgen\"{o}ssische Technische Hochschule, 2014.
+
+\bibitem{DunbarWBAuto(2006)}
+Dunbar W B, Murray R M. Distributed receding horizon control for multi-vehicle formation stabilization~[J]. Automatica, 2006, 42(4): 549-558.
+
+\bibitem{DunbarWBPHD(2004)}
+Dunbar W B. Distributed receding horizon montrol of multi-agent systems~[D]. Pasadena: California Institute of Technology, 2004.
+
+\bibitem{TroddenPAuto(2013)}
+Trodden P, Richards A. Cooperative distributed MPC of linear systems with coupled constraints~[J]. Automatica, 2013, 49(2): 479-487.
+
+\bibitem{TroddenP(2006)}
+Trodden P, Richards A. Robust distributed model predictive control using tubes~[C]. Proceedings of American Control Conference, USA, 2006: 2034–2039.
+
+\bibitem{VenkatAN(2008)}
+Venkat A N, Hiskens I, Rawlings J B, et al. Distributed MPC strategies with application to power system automatic generation control~[J]. IEEE Transactions on Control Systems Technology, 2008, 16(6): 1192-1206.
+
+\bibitem{MullerMA(2011)}
+M\"{u}ller M A, Reble M, Allg\"{o}wer F. A general distributed MPC framework for cooperative control~[C]. Proceedings of the 18th IFAC World Congress. 2011: 7987-7992.
+
+\bibitem{WangPTAC(2014)}
+Wang P, Ding B. Distributed RHC for tracking and formation of nonholonomic multi-vehicle systems~[J]. IEEE Transactions on Automatic Control, 2014, 59(6): 1439-1453.
+
+\bibitem{WeiS(2010)}
+Wei S, Chai Y, Ding B C. Distributed model predictive control for multi-agent systems with improved consistency~[J]. Journal of Control Theory and Applications, 2010, 8(1): 117-122.
+
+\bibitem{MorganDJGCD(2014)}
+Morgan D, Chung S J, Hadaegh F Y. Model predictive control of swarms of spacecraft using sequential convex programming~[J]. Journal of Guidance, Control, and Dynamics, 2014, 37(6): 1725-1740.
+
+\bibitem{YamaguchiH(2003)}
+Yamaguchi H. A distributed motion coordination strategy for multiple nonholonomic mobile robots in cooperative hunting operations~[J]. Robotics and Autonomous Systems, 2003, 43(4): 257-282.
+
+\bibitem{LanY(2010)}
+Lan Y, Yan G F, Lin Z Y. Distributed control of cooperative target enclosing based on reachability and invariance analysis~[J]. Systems \& Control Letters, 2010, 59(7): 381-389.
+
+\bibitem{FerramoscaA(2013)}
+Ferramosca A, Limon D, Alvarado I, et al. Cooperative distributed MPC for tracking~[J]. Automatica, 2013, 49(4): 906-914.
+
+\bibitem{NascimentoTP(2013)}
+Nascimento T P, Moreira A P, Concei\c{c}\~{a}o A G S. Multi-robot nonlinear model predictive formation control: moving target and target absence~[J]. Robotics and Autonomous Systems, 2013, 61(12): 1502-1515.
+
+\bibitem{DunbarWBC(2002)}
+Dunbar W B, Murray R M. Model predictive control of coordinated multi-vehicle formations~[C]. Proceedings of the 41st IEEE Conference on Decision and Control, 2002, 4: 4631-4636.
+
+
+\bibitem{StewartBT(2010)}
+Stewart B T, Venkat A N, Rawlings J B, et al. Cooperative distributed model predictive control~[J]. Systems \& Control Letters, 2010, 59(8): 460-469.
+
+\bibitem{MolinaPAD(2012)}
+Molina P A D. Investment portfolio optimization with predictive control~[D]. Bogota: Universidad Nacional de Colombia, 2012.
+
+
+
+\bibitem{ChaloulosG(2010)}
+Chaloulos G, Hokayem P, Lygeros J. Distributed hierarchical MPC for conflict resolution in air traffic control~[C]. Proceedings of American Control Conferenc, 2010: 3945-3950.
+
+
+\bibitem{GotohJ(2011)}
+Gotoh J, Takeda A. On the role of norm constraints in portfolio selection~[J]. Computational Management Science, 2011, 8(4): 323-353.
+
+\bibitem{DeMiguelV(2009)}
+DeMiguel V, Garlappi L, Nogales F J, et al. A generalized approach to portfolio optimization: Improving performance by constraining portfolio norms~[J]. Management Science, 2009, 55(5): 798-812.
+
+\bibitem{WangIJC(2014)}
+Wang P, Ding B C. A synthesis approach of distributed model predictive control for homogeneous multi-agent system with collision avoidance~[J]. International Journal of Control, 2014, 87(1): 52-63.
+
+\bibitem{FalugiP(2010)}
+Falugi P, Kerrigan E C, Wyk E V. Imperial College London Optimal Control Software User Guide (ICLOCS)~[R/OL].  2010, http://www.ee.ic.ac.uk/ICLOCS/.
+
+\bibitem{WachterA(2010)}
+W\"{a}chter A, Biegler L T. On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming~[J]. Mathematical programming, 2006, 106(1): 25-57.
+
+
+\bibitem{KeviczkyTConsensus(2008)}
+Keviczky T, Johansson K H. A study on distributed model predictive consensus~[J/OL]. 2008, http://arxiv.org/abs/0802.4450.
+
+\bibitem{FerrariTrecateG(2009)}
+Ferrari-Trecate G, Galbusera L, Marciandi M P E, et al. Model predictive control schemes for consensus in multi-agent systems with single- and double-integrator dynamics~[J]. IEEE Transactions on Automatic Control, 2009, 54(11): 2560-2572.
+
+\bibitem{JohanssonB(2006)}
+Johansson B, Speranzon A, Johansson M, et al. Distributed model predictive consensus~[C]. Proceedings of International Symposium on Mathematical Theory of Networks and Systems, 2006: 2438-2444.
+
+\bibitem{SummersTH(2012)}
+Summers T H, Lygeros J. Distributed model predictive consensus via the alternating direction method of multipliers~[C]. Proceedings of 50th Annual Allerton Conference on Communication, Control and Computing, 2012: 79-84.
+
+\bibitem{LiZJ(2006)}
+Li Z J, Xia Y Q, Cao X Q. Adaptive control of bilateral teleoperation with unsymmetrical time-varying delays~[J]. International Journal of Innovative Computing, Information and Control, 2013, 9(2): 753-767.
+
+
+\bibitem{KeviczkyTTAC(2008)}
+Keviczky T, Borrelli F, Fregene K, et al. Decentralized receding horizon control and coordination of autonomous vehicle formations~[J]. IEEE Transactions on Control Systems Technology, 2008, 16(1): 19-33.
+
+\bibitem{ChenJ(2009)}
+Chen J, Sun D, Yang J, et al. A leader-follower formation control of multiple nonholonomic mobile robots incorporating receding-horizon scheme~[J]. The International Journal of Robotics Research, 2009, 29(6): 727-747.
+
+\bibitem{GuD(2006)}
+Gu D B, Hu H S. Receding horizon tracking control of wheeled mobile robots~[J]. IEEE Transactions on Control Systems Technology, 2006, 14(4): 743-749.
+
+\end{thebibliography}

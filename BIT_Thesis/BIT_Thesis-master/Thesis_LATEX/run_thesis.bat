@@ -1,0 +1,1 @@
+for /f "delims=" %%a in ('DIR *.out /B') do gbk2uni %%~na.out &pdflatex %%~na.tex
