@@ -1,0 +1,21 @@
+* 2016.09.14
+* Procedure to build up a git repo on local PC and a remote repo on github.com
+
+1	Install git on PC
+2	Choose a workspace
+3	git init
+4	Create a new repo on github
+5	Clone the new empty repo into workspace
+6	Write your code here
+7	Using command "git remote add origin git@server-name:path/repo-name.git" to relate a remote repo
+8	Using command "git push -u origin master" for first push
+9	git add
+10	git commit -m "..."
+11	git push origin master
+
+echo "# git-learnning" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/shanwu12/git-learnning.git
+git push -u origin master
